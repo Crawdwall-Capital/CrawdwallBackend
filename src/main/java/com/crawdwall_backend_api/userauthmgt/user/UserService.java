@@ -39,8 +39,7 @@ public class UserService {
 	private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtService jwtService;
-    @Value("${application.google.oauth.clientId}")
-    private String googleClientId;
+
 
 	public UserService(UserRepository userRepository, UserOtpService userOtpService, JwtService jwtService,
 			EmailSenderService emailSenderService) {
@@ -442,33 +441,5 @@ public class UserService {
 
 
 
-    /**
-     * Verifies a Google ID token using Google's official verification library.
-     * Ensures the token is valid, has not expired, and matches the expected client ID.
-     *
-     * @param idToken the token received from the client
-     * @return the Google token payload if the token is valid
-     * @throws InvalidOperationException if verification fails or token is invalid
-     */
-    private GoogleIdToken.Payload verifyGoogleToken(String idToken) {
-        try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(),
-                    JacksonFactory.getDefaultInstance()
-            )
-                    .setAudience(Collections.singletonList(googleClientId))
-                    .build();
 
-            GoogleIdToken googleIdToken = verifier.verify(idToken);
-
-            if (googleIdToken == null) {
-                throw new InvalidOperationException("Invalid Google token");
-            }
-
-            return googleIdToken.getPayload();
-
-        } catch (GeneralSecurityException | IOException e) {
-            throw new InvalidOperationException(ApiResponseMessages.ERROR_PROCESSING_QUEST);
-        }
-    }
 }

@@ -36,10 +36,10 @@ public class UtilsService {
 
     private static final Random RANDOM = new Random();
 
-    @Value("${application.pdfGenerator.baseUrl}")
-    private String pdfGeneratorUrl;
-    @Value("${application.pdfGenerator.apiKey}")
-    private String pdfGeneratorApiKey;
+//    @Value("${application.pdfGenerator.baseUrl}")
+//    private String pdfGeneratorUrl;
+//    @Value("${application.pdfGenerator.apiKey}")
+//    private String pdfGeneratorApiKey;
 
     private final RestTemplate restTemplate;
     private static final String KEEP_ALIVE_URL = "https://albion-portal-api.onrender.com/api/v1/utilities/public/stay-up";
@@ -117,36 +117,36 @@ public class UtilsService {
         return String.format("#%06X", (0xFFFFFF & rgb));
     }
 
-    public byte[] generatePdf(File file) throws IOException {
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            headers.setAccept(List.of(MediaType.APPLICATION_PDF, MediaType.ALL));
-            headers.set("Authorization", "Bearer " + pdfGeneratorApiKey);
-            ;
-
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            // Ensure this key matches the external API's expected part name
-            body.add("htmlFile", new FileSystemResource(file));
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            ResponseEntity<byte[]> response = restTemplate.exchange(pdfGeneratorUrl + "/generate-pdf", HttpMethod.POST,
-                    requestEntity, byte[].class);
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-
-                System.out.println("PDF generated successfully, size: " + response.getBody().length + " bytes");
-                return response.getBody();
-            }
-            throw new RuntimeException("Failed to generate PDF: " + response.getStatusCode());
-        } finally {
-            if (file.exists()) {
-                // noinspection ResultOfMethodCallIgnored
-                file.delete();
-            }
-        }
-    }
+//    public byte[] generatePdf(File file) throws IOException {
+//
+//        try {
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+//            headers.setAccept(List.of(MediaType.APPLICATION_PDF, MediaType.ALL));
+//            headers.set("Authorization", "Bearer " + pdfGeneratorApiKey);
+//            ;
+//
+//            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+//            // Ensure this key matches the external API's expected part name
+//            body.add("htmlFile", new FileSystemResource(file));
+//
+//            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+//            ResponseEntity<byte[]> response = restTemplate.exchange(pdfGeneratorUrl + "/generate-pdf", HttpMethod.POST,
+//                    requestEntity, byte[].class);
+//
+//            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+//
+//                System.out.println("PDF generated successfully, size: " + response.getBody().length + " bytes");
+//                return response.getBody();
+//            }
+//            throw new RuntimeException("Failed to generate PDF: " + response.getStatusCode());
+//        } finally {
+//            if (file.exists()) {
+//                // noinspection ResultOfMethodCallIgnored
+//                file.delete();
+//            }
+//        }
+//    }
 
 
 

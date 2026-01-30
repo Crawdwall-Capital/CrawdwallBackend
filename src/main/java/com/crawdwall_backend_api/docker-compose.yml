@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  crawdwall-backend-api:
+    build: .
+    container_name: crawdwall-backend-api
+    restart: unless-stopped
+    expose:
+      - "8080"                # expose internal port ONLY to the Docker network
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

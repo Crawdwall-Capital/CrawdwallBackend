@@ -31,9 +31,6 @@ private   boolean isActive;
 private   boolean isDeleted;
 private   boolean isVerified;
 private   LocalDateTime verifiedAt;
-private   LocalDateTime deletedAt;
-private   LocalDateTime createdAt;
-private   LocalDateTime updatedAt;
 private   String userId;
 private   Status status;
 
