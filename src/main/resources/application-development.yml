@@ -9,8 +9,7 @@ spring:
 
   data:
     mongodb:
-      host: localhost
-      port: 27017
+      uri: mongodb+srv://crawdwallcapital_db_user:TVZ5f1QGCedSM6Zf@myappcluster.gvc03hy.mongodb.net/crawdwall?retryWrites=true&w=majority
   mail:
     host: smtp-relay.brevo.com
     port: 2525
