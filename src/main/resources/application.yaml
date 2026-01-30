@@ -1,0 +1,5 @@
+spring:
+  profiles:
+    active: development
+  application:
+    name: crawdwall-backend-api

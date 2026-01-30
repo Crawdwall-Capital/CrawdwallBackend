@@ -1,0 +1,82 @@
+server:
+  port: 8088
+
+spring:
+  mvc:
+    web:
+      resources:
+        add-mappings: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 3MB
+      max-request-size: 10MB
+
+  data:
+    mongodb:
+      uri: mongodb+srv://crawdwallcapital_db_user:crawdwallcapital_db_user@myappcluster.gvc03hy.mongodb.net/crawdwall?retryWrites=true&w=majority
+
+  mail:
+    host: smtp-relay.brevo.com
+    port: 2525
+    username: a1266e001@smtp-brevo.com
+    password: bskwTb0G3jUz6kb
+    protocol: smtp
+    default-encoding: UTF-8
+    test-connection: false
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            enable: false
+            trust: smtp-relay.brevo.com
+        debug: false
+
+application:
+#  front-end-url: https://albion-portal.netlify.app
+#  magik-link-base-url: https://albion-api.gozade.com/magik/public/
+  security:
+    secret-key: DEC897856524D80723AC9FE48DDEDA830F8F40C8FC77BDBA1E81A2B88F5A41F0
+    api-key: 9ikr0MsASJhgLPcOCfX1EiNbxvzIByjSvJKs4M6pZ2KVVqROl9vrsZvewWfwjZ2G
+#  pdfGenerator:
+#    baseUrl: ${PDF_GENERATOR_BASE_URL:https://receipt-generator-bbhz.onrender.com}
+#    apiKey: ${PDF_GENERATOR_API_KEY:3b8e2e6f8c154e8dbbaab5479e04fb9139d51c764ed1b084f3e85e1b89a4c7ef}
+  google:
+    oauth:
+      clientId: 671904015080-9jdrv3eb6ecbmietc3kb99jsalrkc8pc.apps.googleusercontent.com
+  mail:
+#    mailSender: afsa-project@gozade.com
+
+  configuration:
+    organization:
+#      name: Albion
+#      logo: https://res.cloudinary.com/dl870gulo/image/upload/v1759977628/image_919_ykvspj.png
+#      supportEmail: support@albion.com
+#      senderEmail: afsa-project@gozade.com
+
+  cloudinary:
+    cloudName: dli16cbcp
+    apiKey:  114679395854434
+    apiSecret: 9yR7-eL7W6U5NrPyRrrrB6OIYP0
+
+  sender:
+    apikey: 9ikr0MsASJhgLPcOCfX1EiNbxvzIByjSvJKs4M6pZ2KVVqROl9vrsZvewWfwjZ2G
+
+  superAdmin:
+    emailAddress: admin@nominee-director.com
+    password: password
+    firstName: Super
+    lastName: Admin
+    phoneNumber: 1234567890
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    try-it-out-enabled: true
+
