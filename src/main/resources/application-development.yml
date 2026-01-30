@@ -1,5 +1,5 @@
 server:
-  port: 8088
+  port: ${SERVER_PORT:8088}
 
 spring:
   servlet:
@@ -9,12 +9,13 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb+srv://crawdwallcapital_db_user:TVZ5f1QGCedSM6Zf@myappcluster.gvc03hy.mongodb.net/crawdwall?retryWrites=true&w=majority
+      uri: ${MONGODB_URI:mongodb+srv://crawdwallcapital_db_user:TVZ5f1QGCedSM6Zf@myappcluster.gvc03hy.mongodb.net/crawdwall?retryWrites=true&w=majority}
+
   mail:
-    host: smtp-relay.brevo.com
-    port: 2525
-    username: a1266e001@smtp-brevo.com
-    password: bskwTb0G3jUz6kb
+    host: ${SMTP_HOST:smtp-relay.brevo.com}
+    port: ${SMTP_PORT:2525}
+    username: ${SMTP_USERNAME:a1266e001@smtp-brevo.com}
+    password: ${SMTP_PASSWORD:bskwTb0G3jUz6kb}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -22,38 +23,38 @@ spring:
       mail.smtp.timeout: 5000
 
 application:
-  front-end-url: https://albion-portal.netlify.app
-  magik-link-base-url: https://albion-api.gozade.com/magik/public/
+  front-end-url: ${FRONTEND_URL:https://albion-portal.netlify.app}
+  magik-link-base-url: ${MAGIC_LINK_BASE_URL:https://albion-api.gozade.com/magik/public/}
   security:
-    secret-key: DEC897856524D80723AC9FE48DDEDA830F8F40C8FC77BDBA1E81A2B88F5A41F0
-    api-key: 9ikr0MsASJhgLPcOCfX1EiNbxvzIByjSvJKs4M6pZ2KVVqROl9vrsZvewWfwjZ2G
-    token-expiration: 86400000
+    secret-key: ${SECRET_KEY:DEC897856524D80723AC9FE48DDEDA830F8F40C8FC77BDBA1E81A2B88F5A41F0}
+    api-key: ${API_KEY:9ikr0MsASJhgLPcOCfX1EiNbxvzIByjSvJKs4M6pZ2KVVqROl9vrsZvewWfwjZ2G}
+    token-expiration: ${TOKEN_EXPIRATION:86400000}
 
   mail:
-    sender: no-reply@crowdwall.com
-    support: support@crowdwall.com
+    sender: ${MAIL_SENDER:no-reply@crowdwall.com}
+    support: ${MAIL_SUPPORT:support@crowdwall.com}
 
   configuration:
     organization:
-      name: Crawdwall
-      logo: https://res.cloudinary.com/dl870gulo/image/upload/v1759977628/image_919_ykvspj.png
-      supportEmail: support@crawdwal.com
-      senderEmail: crawdwalls-project@crawdwall.com
+      name: ${ORG_NAME:Crawdwall}
+      logo: ${ORG_LOGO:https://res.cloudinary.com/dl870gulo/image/upload/v1759977628/image_919_ykvspj.png}
+      supportEmail: ${SUPPORT_EMAIL:support@crawdwal.com}
+      senderEmail: ${SENDER_EMAIL:crawdwalls-project@crawdwall.com}
 
   cloudinary:
-    cloudName: dli16cbcp
-    apiKey:  114679395854434
-    apiSecret: 9yR7-eL7W6U5NrPyRrrrB6OIYP0
+    cloudName: ${CLOUDINARY_CLOUD_NAME:dli16cbcp}
+    apiKey: ${CLOUDINARY_API_KEY:114679395854434}
+    apiSecret: ${CLOUDINARY_API_SECRET:9yR7-eL7W6U5NrPyRrrrB6OIYP0}
 
   sender:
-    apikey: 9ikr0MsASJhgLPcOCfX1EiNbxvzIByjSvJKs4M6pZ2KVVqROl9vrsZvewWfwjZ2G
+    apikey: ${SENDER_API_KEY:9ikr0MsASJhgLPcOCfX1EiNbxvzIByjSvJKs4M6pZ2KVVqROl9vrsZvewWfwjZ2G}
 
   superAdmin:
-    emailAddress: admin@nominee-director.com
-    password: password
-    firstName: Super
-    lastName: Admin
-    phoneNumber: 1234567890
+    emailAddress: ${SUPER_ADMIN_EMAIL:admin@nominee-director.com}
+    password: ${SUPER_ADMIN_PASSWORD:password}
+    firstName: ${SUPER_ADMIN_FIRST_NAME:Super}
+    lastName: ${SUPER_ADMIN_LAST_NAME:Admin}
+    phoneNumber: ${SUPER_ADMIN_PHONE:1234567890}
 
 springdoc:
   swagger-ui:
