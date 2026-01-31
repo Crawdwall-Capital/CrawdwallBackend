@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableScheduling
 @OpenAPIDefinition
+
+
 public class CrawdwallBackendApiApplication {
 
     public static void main(String[] args) {

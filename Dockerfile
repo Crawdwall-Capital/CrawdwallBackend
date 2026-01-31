@@ -21,7 +21,7 @@ COPY --from=build /app/target/*-SNAPSHOT.jar app.jar
 
 # (Optional) allow JAVA_OPTS like memory flags
 ENV JAVA_OPTS=""
-EXPOSE 8088
+EXPOSE ${PORT:-8088}
 
 # Run as non-root (safer)
 RUN useradd -u 1001 spring && chown -R spring:spring /app

@@ -35,6 +35,7 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
     private static final List<Pattern> PUBLIC_PATTERNS = Arrays.asList(
             Pattern.compile("^/api/v1/admin/public($|/.*)"),
             Pattern.compile("^/api/v1/company/public($|/.*)"),
+            Pattern.compile("^/api/v1/company/public/?$"),
             Pattern.compile("^/api/v1/utilities/public($|/.*)"),
             Pattern.compile("^/swagger-ui\\.html$"),
             Pattern.compile("^/swagger-ui/?$"),
@@ -55,6 +56,7 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
             if (isPublicEndpoint(req.getRequestURI())) {
                 log.info("[M01-PUB] public endpoint detected: {} -> passing through", req.getRequestURI());
                 chain.doFilter(req, res);
+                log.info("[M01-PUB-END] Request completed for: {}", req.getRequestURI());
                 return;
             }
 

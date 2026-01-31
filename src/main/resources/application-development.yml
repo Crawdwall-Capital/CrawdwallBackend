@@ -60,3 +60,9 @@ springdoc:
   swagger-ui:
     path: /swagger
     operations-sorter: method
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG

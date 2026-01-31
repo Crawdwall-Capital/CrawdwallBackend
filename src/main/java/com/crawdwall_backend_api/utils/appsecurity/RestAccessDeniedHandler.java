@@ -22,7 +22,14 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest req,
                        HttpServletResponse res,
                        AccessDeniedException ex) throws IOException {
-        res.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
+        System.out.println("=== ACCESS DENIED HANDLER TRIGGERED ===");
+        System.out.println("URI: " + req.getRequestURI());
+        System.out.println("Method: " + req.getMethod());
+        System.out.println("Message: " + ex.getMessage());
+        System.out.println("Stack trace:");
+        ex.printStackTrace();
+
+        res.setStatus(HttpServletResponse.SC_FORBIDDEN);
         res.setContentType("application/json;charset=UTF-8");
 
         var body = Map.of(
@@ -31,7 +38,6 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
                 "path", req.getRequestURI(),
                 "timestamp", OffsetDateTime.now().toString()
         );
-        System.out.println(ex.getMessage()+" Access Denied Handler called");
         MAPPER.writeValue(res.getOutputStream(), body);
     }
 }
