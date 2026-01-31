@@ -25,15 +25,15 @@ public class SecurityConfig {
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final ApiSecurityFilter apiSecurityFilter;
-    private final RestAuthEntryPoint authEntryPoint;
+//    private final RestAuthEntryPoint authEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(ApiSecurityFilter apiSecurityFilter,
-                          RestAuthEntryPoint authEntryPoint,
+
                           RestAccessDeniedHandler accessDeniedHandler) {
         log.info("SecurityConfig constructor initialized");
         this.apiSecurityFilter = apiSecurityFilter;
-        this.authEntryPoint = authEntryPoint;
+
         this.accessDeniedHandler = accessDeniedHandler;
     }
 
@@ -53,17 +53,18 @@ public class SecurityConfig {
                     sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                     log.debug("Session management set to stateless");
                 })
-                .exceptionHandling(eh -> {
-                    eh.authenticationEntryPoint(authEntryPoint)
-                            .accessDeniedHandler(accessDeniedHandler);
-                    log.debug("Exception handlers configured");
-                })
+//                .exceptionHandling(eh -> {
+//                    eh.authenticationEntryPoint(authEntryPoint)
+//                            .accessDeniedHandler(accessDeniedHandler);
+//                    log.debug("Exception handlers configured");
+//                })
                 .authorizeHttpRequests(auth -> {
                     log.debug("Setting up authorization rules");
                     auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                             .requestMatchers(
 
                                     "/magik/public/**",
+                                    "/company/public/**",
                                     "/api/v1/utilities/public/**",
                                     "/api/v1/utilities/public",
                                     "/swagger-ui.html",

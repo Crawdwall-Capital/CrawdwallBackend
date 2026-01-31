@@ -2,7 +2,9 @@ package com.crawdwall_backend_api.company.request;
 
 import com.crawdwall_backend_api.company.CompanyType;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 
+@Builder
 public record CompanyCreateRequest(
     @JsonProperty(required = true) String companyName,
     @JsonProperty(required = true) String companyEmail,

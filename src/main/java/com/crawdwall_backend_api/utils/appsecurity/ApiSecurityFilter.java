@@ -34,6 +34,7 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
     // Public endpoints (regex)
     private static final List<Pattern> PUBLIC_PATTERNS = Arrays.asList(
             Pattern.compile("^/api/v1/admin/public($|/.*)"),
+            Pattern.compile("^/api/v1/company/public($|/.*)"),
             Pattern.compile("^/api/v1/utilities/public($|/.*)"),
             Pattern.compile("^/swagger-ui\\.html$"),
             Pattern.compile("^/swagger-ui/?$"),

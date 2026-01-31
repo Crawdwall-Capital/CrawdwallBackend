@@ -16,6 +16,7 @@ public class RouteValidator {
 
             Pattern.compile("^/magic/public/.*$"),
             Pattern.compile("^/api/v1/admin/public/.*$"),
+            Pattern.compile("^/api/v1/company/public/.*$"),
 
             Pattern.compile("^/api/v1/utilities/public/.*$"),
 

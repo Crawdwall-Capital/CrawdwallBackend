@@ -30,6 +30,7 @@ public class CompanyController {
 
     @PostMapping("/public/create")
     public ResponseEntity<ApiResponse> createCompany(@RequestBody CompanyCreateRequest request) {
+        System.out.println(":::::::::::::::::::::::::::::::::::::::::::::::::::::: i got here");
         companyService.createCompany(request);
         return ResponseEntity.ok(ApiResponse.builder()
         .success(true).message("Company created successfully")
