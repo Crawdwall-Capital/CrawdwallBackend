@@ -32,4 +32,10 @@ public interface ApiResponseMessages {
     String ERROR_COMPANY_PHONE_ALREADY_EXISTS = "Company phone already exists.";
     String ERROR_COMPANY_REGISTRATION_NUMBER_ALREADY_EXISTS = "Company registration number already exists.";
     String ERROR_COMPANY_NOT_FOUND = "Company not found.";
+    
+    String ERROR_INVESTOR_EMAIL_ALREADY_EXISTS = "Investor email already exists.";
+    String ERROR_INVESTOR_PHONE_ALREADY_EXISTS = "Investor phone already exists.";
+    String ERROR_INVESTOR_NATIONAL_ID_ALREADY_EXISTS = "Investor national ID already exists.";
+    String ERROR_INVESTOR_TAX_ID_ALREADY_EXISTS = "Investor tax ID already exists.";
+    String ERROR_INVESTOR_NOT_FOUND = "Investor not found.";
 }
