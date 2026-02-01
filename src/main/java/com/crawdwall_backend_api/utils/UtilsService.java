@@ -210,7 +210,7 @@ public class UtilsService {
      @Scheduled(fixedRate = 45000)
      public void pingServer() {
          try {
-             String endpoint =  "https://ghealead-backend-v1.onrender.com/api/v1/utilities/public/stay-up";
+             String endpoint =  "https://crawdwallbackend.onrender.com/api/v1/utilities/public/stay-up";
              
             log.info("Pinging server at: {}", endpoint);
              

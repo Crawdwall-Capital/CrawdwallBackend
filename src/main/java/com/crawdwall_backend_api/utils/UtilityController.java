@@ -1,21 +1,17 @@
-package com.crawdwall_backend_api.utils;//package com.crawdwall_api_application.utils;
-//
-//
-//
-//import com.crawdwall_api_application.utils.fileupload.FileUploadCategory;
-//import com.crawdwall_api_application.utils.fileupload.FileUploadService;
-//import lombok.AllArgsConstructor;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//import org.springframework.web.multipart.MultipartFile;
-//
-//import java.util.Map;
-//
-//@RestController
-//@RequestMapping("/api/v1/utilities")
-//@AllArgsConstructor
-//public class UtilityController {
-//
+package com.crawdwall_backend_api.utils;
+
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/utilities")
+@AllArgsConstructor
+public class UtilityController {
+
 //    private final FileUploadService fileUploadService;
 //
 //    @PostMapping("/public/upload")
@@ -33,14 +29,14 @@ package com.crawdwall_backend_api.utils;//package com.crawdwall_api_application.
 //        return ResponseEntity.ok(new ApiResponse(true, "File Uploaded Successfully",
 //                fileUploadService.uploadFile(file,category,extraData)));
 //    }
-//
-//    @GetMapping("/public/stay-up")
-//    ResponseEntity<ApiResponse> stayUp() {
-//        return ResponseEntity.ok(new ApiResponse(true, "Server is awake.😎😎😎😎😎😎", null));
-//    }
-//
-//
-//
-//
-//
-//}
+
+    @GetMapping("/public/stay-up")
+    ResponseEntity<ApiResponse> stayUp() {
+        return ResponseEntity.ok(new ApiResponse(true, "Server is awake.😎😎😎😎😎😎", null));
+    }
+
+
+
+
+
+}
