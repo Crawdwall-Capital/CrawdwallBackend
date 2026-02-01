@@ -13,16 +13,11 @@ public class RouteValidator {
 
     public static final List<Pattern> openApiEndpoints = List.of(
             // existing public route(s)
-
-            Pattern.compile("^/magic/public/.*$"),
+            Pattern.compile("^/api/v1/app-user/public/.*$"),
+            Pattern.compile("^/api/v1/users/public/.*$"),
             Pattern.compile("^/api/v1/admin/public/.*$"),
-            Pattern.compile("^/api/v1/company/public/.*$"),
-
             Pattern.compile("^/api/v1/utilities/public/.*$"),
-
             // Add more public routes as needed
-
-
             // --- Swagger UI (springdoc 2.x) ---
             // UI entry points
             Pattern.compile("^/swagger-ui\\.html$"),

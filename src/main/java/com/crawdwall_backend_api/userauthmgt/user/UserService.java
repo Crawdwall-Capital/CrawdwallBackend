@@ -10,12 +10,8 @@ import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpService;
 import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpType;
 import com.crawdwall_backend_api.utils.ApiResponseMessages;
 import com.crawdwall_backend_api.utils.appsecurity.JwtService;
-import com.crawdwall_backend_api.utils.emailsenderservice.EmailSenderService;
+
 import com.crawdwall_backend_api.utils.exception.*;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,17 +31,18 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final UserOtpService userOtpService;
 	@Qualifier("mailgunEmailSenderServiceImpl")
-	private final EmailSenderService emailSenderService;
+//	private final EmailSenderService emailSenderService;
 	private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtService jwtService;
 
 
-	public UserService(UserRepository userRepository, UserOtpService userOtpService, JwtService jwtService,
-			EmailSenderService emailSenderService) {
+	public UserService(UserRepository userRepository, UserOtpService userOtpService, JwtService jwtService
+//			EmailSenderService emailSenderService
+    ) {
 		this.userRepository = userRepository;
 		this.userOtpService = userOtpService;
-		this.emailSenderService = emailSenderService;
+//		this.emailSenderService = emailSenderService;
         this.jwtService = jwtService;
 	}
 
@@ -96,7 +93,7 @@ public class UserService {
 				savedUser.setPassword(password);
                 savedUser = userRepository.save(savedUser);
                 Map<String, String> otp = userOtpService.generateOtpForUser(savedUser.getId(), UserOtpType.ACCOUNT_ACTIVATION);
-                emailSenderService.sendAdminAccountActivationEmail(savedUser.getEmailAddress(), userCreateRequest.firstName()+" "+userCreateRequest.lastName(), password,otp.get("otp"));
+//                emailSenderService.sendAdminAccountActivationEmail(savedUser.getEmailAddress(), userCreateRequest.firstName()+" "+userCreateRequest.lastName(), password,otp.get("otp"));
                 return buildUserCreateResponseWithOtp(savedUser, otp.get("otp"));
             }else{
 				savedUser.setPassword(passwordEncoder.encode(userCreateRequest.password()));
@@ -106,7 +103,7 @@ public class UserService {
         Map<String, String> otp = userOtpService.generateOtpForUser(savedUser.getId(), UserOtpType.ACCOUNT_ACTIVATION);
 
         if(userCreateRequest.userType() == UserType.COMPANY){
-           emailSenderService.sendCompanyAccountActivationEmail(savedUser.getEmailAddress(),savedUser.getFirstName() ,otp.get("expiresAt"), otp.get("otp"));
+//           emailSenderService.sendCompanyAccountActivationEmail(savedUser.getEmailAddress(),savedUser.getFirstName() ,otp.get("expiresAt"), otp.get("otp"));
        }
       
 
@@ -307,10 +304,10 @@ public class UserService {
 
 		Map<String, String> otp = userOtpService.generateOtpForUser(user.getId(), UserOtpType.PASSWORD_RESET);
         if(user.getUserType() == UserType.ADMIN){
-            emailSenderService.sendAdminPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName() + " " + user.getLastName());
+//            emailSenderService.sendAdminPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName() + " " + user.getLastName());
         }
         if(user.getUserType() == UserType.COMPANY){
-            emailSenderService.sendCompanyPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName());
+//            emailSenderService.sendCompanyPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName());
         }
 	}
 
@@ -371,11 +368,11 @@ public class UserService {
 				.orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_USER_INVALID_ACCOUNT));
 		Map<String, String> otp = userOtpService.generateOtpForUser(user.getId(), userOtpType);
 		if(user.getUserType() == UserType.ADMIN){
-			emailSenderService.sendAdminAccountActivationEmail(user.getEmailAddress(), user.getFirstName() + " " + user.getLastName(), user.getPassword(), otp.get("otp"));
+//			emailSenderService.sendAdminAccountActivationEmail(user.getEmailAddress(), user.getFirstName() + " " + user.getLastName(), user.getPassword(), otp.get("otp"));
 		 }
 
 		 if(user.getUserType() == UserType.COMPANY && userOtpType == UserOtpType.ACCOUNT_ACTIVATION){
-			emailSenderService.sendCompanyAccountActivationEmail(user.getEmailAddress(), user.getFirstName(), otp.get("expiresAt"), otp.get("otp"));
+//			emailSenderService.sendCompanyAccountActivationEmail(user.getEmailAddress(), user.getFirstName(), otp.get("expiresAt"), otp.get("otp"));
 		 }
 
 	}
@@ -418,7 +415,7 @@ public class UserService {
 	public void sendAccountSetupCompletionEmail(String userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_USER_INVALID_ACCOUNT));
-		emailSenderService.sendAccountSetupCompletionEmail(user.getEmailAddress(), user.getFirstName() + " " + user.getLastName());
+//		emailSenderService.sendAccountSetupCompletionEmail(user.getEmailAddress(), user.getFirstName() + " " + user.getLastName());
 	}
 
 	public User getUserByEmailAddress(String emailAddress) {

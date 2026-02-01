@@ -1,10 +1,12 @@
 package com.crawdwall_backend_api.company.response;
 
-import com.crawdwall_backend_api.utils.Address;
+
 import com.crawdwall_backend_api.company.CompanyType;
-import com.crawdwall_backend_api.utils.Status;
+
 import java.time.LocalDateTime;
 
+import com.crawdwall_backend_api.utils.Address;
+import com.crawdwall_backend_api.utils.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

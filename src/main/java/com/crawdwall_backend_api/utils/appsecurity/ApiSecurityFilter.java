@@ -9,11 +9,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -27,21 +27,26 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
+    private final DefaultRouteValidator defaultRouteValidator;
 
-    @Value("${application.security.api-key}")
-    private String apiKey;
+//    @Value("${spring.security.jwt.api-key}")
+//    private String apiKey;
 
     // Public endpoints (regex)
     private static final List<Pattern> PUBLIC_PATTERNS = Arrays.asList(
+            Pattern.compile("^/api/v1/app-user/public($|/.*)"),
+            Pattern.compile("^/api/v1/users/public($|/.*)"),
             Pattern.compile("^/api/v1/admin/public($|/.*)"),
-            Pattern.compile("^/api/v1/company/public($|/.*)"),
-            Pattern.compile("^/api/v1/company/public/?$"),
             Pattern.compile("^/api/v1/utilities/public($|/.*)"),
+            Pattern.compile("^/api/v1/company/public($|/.*)"),
+            Pattern.compile("^/magik/public($|/.*)"),
+            Pattern.compile("^/magik/public/($|/.*)"),
             Pattern.compile("^/swagger-ui\\.html$"),
             Pattern.compile("^/swagger-ui/?$"),
             Pattern.compile("^/swagger-ui/.*$"),
             Pattern.compile("^/v3/api-docs($|/.*)$"),
-            Pattern.compile("^/api-docs($|/.*)$")
+            Pattern.compile("^/api-docs($|/.*)$"),
+            Pattern.compile("^/api/v1/newsletter-emails/public($|/.*)$")
     );
 
     // ======================= doFilterInternal ======================= // [M01]
@@ -49,20 +54,28 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        log.info("[M01] ENTER {} {}", req.getMethod(), req.getRequestURI());
+       log.info("[M01] ENTER {} {}", req.getMethod(), req.getRequestURI());
 
         try {
             // 1) Public? pass without any validation
             if (isPublicEndpoint(req.getRequestURI())) {
-                log.info("[M01-PUB] public endpoint detected: {} -> passing through", req.getRequestURI());
+               log.info("[M01-PUB] public endpoint detected: {} -> passing through", req.getRequestURI());
                 chain.doFilter(req, res);
-                log.info("[M01-PUB-END] Request completed for: {}", req.getRequestURI());
                 return;
             }
+            
+            if (!defaultRouteValidator.validateUserRoleForEndpoint(req)) {
+
+              log.info("[M01.2-DEF] user does not have access to endpoint: {} -> sending error response", req.getRequestURI());
+              sendErrorResponse(res, HttpStatus.UNAUTHORIZED, "User does not have access to this endpoint");
+              return;
+
+            }
+
 
             // 2) Private endpoints require API key
             validateApiKey(req);
-            log.info("[M01-AK] API key validated successfully");
+           log.info("[M01-AK] API key validated successfully");
 
             // 3) JWT validation for private endpoints
             String h = req.getHeader("Authorization");
@@ -91,11 +104,11 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
             var authentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                     email, null, authorities);
             org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.info("[M01-AUTH] SecurityContext set: principal={} authorities={}", email, authorities.size());
+           log.info("[M01-AUTH] SecurityContext set: principal={} authorities={}", email, authorities.size());
 
             // 5) Continue
             chain.doFilter(req, res);
-            log.info("[M01-END] Filtered request successfully for principal={}", email);
+           log.info("[M01-END] Filtered request successfully for principal={}", email);
 
         } catch (SecurityException se) {
             log.warn("[M01-ERR] SecurityException: {}", se.getMessage());
@@ -109,7 +122,7 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
     // ======================= isPublicEndpoint ======================= // [M02]
     private boolean isPublicEndpoint(String path) {
         boolean match = PUBLIC_PATTERNS.stream().anyMatch(p -> p.matcher(path).matches());
-        log.info("[M02] isPublicEndpoint check: path={} isPublic={}", path, match);
+       log.info("[M02] isPublicEndpoint check: path={} isPublic={}", path, match);
         return match;
     }
 
@@ -117,34 +130,34 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
     private void validateApiKey(HttpServletRequest req) {
         // Check if this is a public endpoint before validating API key
         if (isPublicEndpoint(req.getRequestURI())) {
-            log.info("[M03] Public endpoint detected: {} -> skipping API key validation", req.getRequestURI());
+           log.info("[M03] Public endpoint detected: {} -> skipping API key validation", req.getRequestURI());
             return;
         }
 
         String provided = req.getHeader("X-API-Key");
-        log.info("[M03] Checking X-API-Key header for private endpoint - present={}", (provided != null));
+       log.info("[M03] Checking X-API-Key header for private endpoint - present={}", (provided != null));
         if (provided == null || provided.isBlank()) {
             log.warn("[M03] Missing or blank API key!");
             throw new SecurityException("Request could not be authenticated.");
         }
-        if (!provided.equals(apiKey)) {
+        if (!provided.equals("irSjyrD7pWJsgy9VQlcSQ5nJ0Qm8cDhu")) {
             log.warn("[M03] API key mismatch!");
             throw new SecurityException("Request could not be authenticated.");
         }
-        log.info("[M03] API key validated OK");
+       log.info("[M03] API key validated OK");
     }
 
     // ======================= validateJwtToken ======================= // [M04]
     private void validateJwtToken(HttpServletRequest req) {
         String authHeader = req.getHeader("Authorization");
-        log.info("[M04] validateJwtToken: Authorization header present={}", (authHeader != null));
+       log.info("[M04] validateJwtToken: Authorization header present={}", (authHeader != null));
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("[M04] Missing or invalid Authorization header");
             throw new SecurityException("Authentication is required");
         }
 
         String token = authHeader.substring(7);
-        log.info("[M04] Token preview={}", preview(token));
+       log.info("[M04] Token preview={}", preview(token));
 
         if (!jwtService.isTokenValid(token)) {
             log.warn("[M04] Token is not valid");
@@ -152,7 +165,7 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
         }
 
         setUserAttributes(req, token);
-        log.info("[M04] validateJwtToken OK");
+       log.info("[M04] validateJwtToken OK");
     }
 
     // ======================= setUserAttributes ====================== // [M05]
@@ -175,13 +188,13 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
             req.setAttribute("clientId", claims.get("clientId"));
         }
 
-        log.info("[M05] Set user attributes: userId={}, email={}, userRole={}", userId, email, userRole);
+       log.info("[M05] Set user attributes: userId={}, email={}, userRole={}", userId, email, userRole);
     }
 
     // ======================= sendErrorResponse ====================== // [M06]
     private void sendErrorResponse(HttpServletResponse res, HttpStatus status, String msg)
             throws IOException {
-        log.info("[M06] sendErrorResponse: status={}, msg={}", status.value(), msg);
+       log.info("[M06] sendErrorResponse: status={}, msg={}", status.value(), msg);
         res.setStatus(status.value());
         res.setContentType(MediaType.APPLICATION_JSON_VALUE);
         objectMapper.writeValue(res.getWriter(), new ApiResponse(false, msg, null));
@@ -193,6 +206,4 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
         int keep = Math.min(6, token.length());
         return token.substring(0, keep) + "...len=" + token.length();
     }
-
-
 }

@@ -1,13 +1,11 @@
 package com.crawdwall_backend_api.utils.appsecurity;
 
-import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -22,14 +20,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest req,
                        HttpServletResponse res,
                        AccessDeniedException ex) throws IOException {
-        System.out.println("=== ACCESS DENIED HANDLER TRIGGERED ===");
-        System.out.println("URI: " + req.getRequestURI());
-        System.out.println("Method: " + req.getMethod());
-        System.out.println("Message: " + ex.getMessage());
-        System.out.println("Stack trace:");
-        ex.printStackTrace();
-
-        res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        res.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
         res.setContentType("application/json;charset=UTF-8");
 
         var body = Map.of(
@@ -38,6 +29,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
                 "path", req.getRequestURI(),
                 "timestamp", OffsetDateTime.now().toString()
         );
+        System.out.println(ex.getMessage()+" Access Denied Handler called");
         MAPPER.writeValue(res.getOutputStream(), body);
     }
 }

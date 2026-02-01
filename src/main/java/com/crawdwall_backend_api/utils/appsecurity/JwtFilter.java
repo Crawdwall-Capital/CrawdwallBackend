@@ -1,5 +1,6 @@
 package com.crawdwall_backend_api.utils.appsecurity;
 
+
 import com.crawdwall_backend_api.utils.exception.InvalidOperationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
@@ -14,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RequiredArgsConstructor
-@Component
 public class JwtFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
@@ -37,54 +36,55 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        log.info("doFilterInternal START - req={} {}", req.getMethod(), req.getRequestURI());
+       log.info("doFilterInternal START - req={} {}", req.getMethod(), req.getRequestURI());
 
         // allow public routes early
         if (req.getRequestURI().contains("magik/public/") || publicRouteValidator.isPublic.test(req)) {
-            log.info("PUBLIC route detected, continuing without auth - uri={}", req.getRequestURI());
+           log.info("PUBLIC route detected, continuing without auth - uri={}", req.getRequestURI());
             chain.doFilter(req, res);
-            log.info("Returned from chain for public route - uri={}", req.getRequestURI());
+           log.info("Returned from chain for public route - uri={}", req.getRequestURI());
             return;
         }
 
         String token = resolveToken(req);
         if (token == null) { // no token → unauth for secured routes
-            log.warn("Missing token for secured route - uri={}", req.getRequestURI());
+            log.info("Missing token for secured route - uri={}", req.getRequestURI());
             forbid(res, "Missing token");
             return;
         }
 
         Claims claims;
         try {
-            log.info("Parsing token (masked) - tokenPreview={}", mask(token));
+           log.info("Parsing token (masked) - tokenPreview={}", mask(token));
             claims = jwtService.parse(token);             
-            log.info("Token parsed successfully");
+           log.info("Token parsed successfully");
         } catch (Exception e) {
-            log.warn("Invalid token caught: {} - msg={}", e.getClass().getSimpleName(), e.getMessage());
+            log.info("Invalid token caught: {} - msg={}", e.getClass().getSimpleName(), e.getMessage());
             forbid(res, "Invalid token");
             return;
         }
 
         String userType = claims.get("userType", String.class);
         List<String> auth = claims.get("auth", List.class);   
-        log.info("Claims extracted: userType={} authCount={}", userType, (auth == null ? 0 : auth.size()));
+       log.info("Claims extracted: userType={} authCount={}", userType, (auth == null ? 0 : auth.size()));
         if (userType == null) {
-            log.warn("Missing userType in claims");
+            log.info("Missing userType in claims");
             forbid(res, "Missing userType");
             return;
         }
 
         // route access check by userType
-        log.info("Checking route access for userType={} uri={}", userType, req.getRequestURI());
+       log.info("Checking route access for userType={} uri={}", userType, req.getRequestURI());
         boolean allowed = switch (userType) {
-            case "ADMIN"   -> routeValidator.isAdminSecured.test(req);
-            case "NOMINEE" -> routeValidator.isNomineeSecured.test(req);
+            case "ADMIN"   -> routeValidator.isAdminEndpoint(req);
+            case "APP_USER" -> routeValidator.isAppUserEndpoint(req);
 
+            case "SUPER_ADMIN" -> routeValidator.isSuperAdminEndpoint(req);
             default        -> false;
         };
-        log.info("Access allowed={}", allowed);
+       log.info("Access allowed={}", allowed);
         if (!allowed) {
-            log.warn("Account Unauthorized for userType={} uri={}", userType, req.getRequestURI());
+            log.info("Account Unauthorized for userType={} uri={}", userType, req.getRequestURI());
             forbid(res, "Account Unauthorized");
             throw new InvalidOperationException("Account Unauthorized");
         }
@@ -92,32 +92,32 @@ public class JwtFilter extends OncePerRequestFilter {
         // set SecurityContext so @PreAuthorize works
         var authorities = (auth == null ? List.<GrantedAuthority>of()
                 : auth.stream().map(org.springframework.security.core.authority.SimpleGrantedAuthority::new).collect(Collectors.toSet()));
-        log.info("Authorities prepared: {}", authorities);
+       log.info("Authorities prepared: {}", authorities);
         var authentication = new UsernamePasswordAuthenticationToken(
                 claims.get("email", String.class), null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        log.info("SecurityContext set for email={}", claims.get("email", String.class));
+       log.info("SecurityContext set for email={}", claims.get("email", String.class));
 
         chain.doFilter(req, res);
-        log.info("doFilterInternal END - completed filter chain for uri={}", req.getRequestURI());
+       log.info("doFilterInternal END - completed filter chain for uri={}", req.getRequestURI());
     }
 
     private String resolveToken(HttpServletRequest req) {
         boolean headerPresent = req.getHeader("Authorization") != null;
-        log.info("resolveToken - header Authorization present? {}", headerPresent);
+       log.info("resolveToken - header Authorization present? {}", headerPresent);
         String h = req.getHeader("Authorization");
         String token = (h != null && h.startsWith("Bearer ")) ? h.substring(7) : null;
-        log.info("resolveToken - tokenPresent={} tokenPreview={}", (token != null), (token == null ? "null" : mask(token)));
+       log.info("resolveToken - tokenPresent={} tokenPreview={}", (token != null), (token == null ? "null" : mask(token)));
         return token;
     }
 
     private void forbid(HttpServletResponse res, String msg) throws IOException {
-        log.warn("forbid - msg={}", msg);
+        log.info("forbid - msg={}", msg);
         res.setStatus(HttpStatus.FORBIDDEN.value());
         res.setContentType(APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(res.getOutputStream(),
                 new ApiResponse(false, msg, null));
-        log.info("forbid END - response written with msg={}", msg);
+       log.info("forbid END - response written with msg={}", msg);
     }
 
     // helper to avoid printing whole sensitive token

@@ -24,7 +24,7 @@ import com.crawdwall_backend_api.utils.ApiResponseMessages;
 import com.crawdwall_backend_api.utils.PaginatedData;
 import com.crawdwall_backend_api.utils.RefinedPagination;
 import com.crawdwall_backend_api.utils.UtilsService;
-import com.crawdwall_backend_api.utils.appsecurity.AuthorityMapper;
+
 import com.crawdwall_backend_api.utils.appsecurity.JwtService;
 import com.crawdwall_backend_api.utils.exception.ResourceNotFoundException;
 import com.crawdwall_backend_api.utils.exception.UnauthorizedException;
@@ -109,7 +109,7 @@ public class AdminService {
         try {
             Role role = roleService.findRoleById(admin.getRoleId());
             if (role != null) {
-                authorities = AuthorityMapper.toAuthorities(role);
+//                authorities = AuthorityMapper.toAuthorities(role);
             } else {
                 log.warn("Role is null for admin with id: {}", admin.getId());
             }
@@ -219,33 +219,33 @@ public class AdminService {
     }
 
 
-    @PostConstruct
-    private void setSuperAdmin() {
-
-        if (!userService.existsByEmailAddressIgnoreCase(superAdminEmailAddress)) {
-            log.info("Super admin not found, creating super admin");
-            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
-                    .firstName(superAdminFirstName)
-                    .lastName(superAdminLastName)
-                    .emailAddress(superAdminEmailAddress)
-                    .userType(UserType.ADMIN)
-                    .password(superAdminPassword)
-                    .build();
-
-            UserCreateResponse userCreateResponse = userService.createUser(userCreateRequest);
-
-            adminRepository.save(Admin.builder()
-                    .userId(userCreateResponse.userId())
-                    .isActive(true)
-                    .isVerified(true)
-                    .isDefault(true)
-                    .roleId(roleService.getRoleByName("SUPER_ADMIN").id())
-                    .build());
-
-            log.info("Super admin created successfully");
-        }
-        log.info("Super admin found, skipping creation");
-    }
+//    @PostConstruct
+//    private void setSuperAdmin() {
+//
+//        if (!userService.existsByEmailAddressIgnoreCase(superAdminEmailAddress)) {
+//            log.info("Super admin not found, creating super admin");
+//            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+//                    .firstName(superAdminFirstName)
+//                    .lastName(superAdminLastName)
+//                    .emailAddress(superAdminEmailAddress)
+//                    .userType(UserType.ADMIN)
+//                    .password(superAdminPassword)
+//                    .build();
+//
+//            UserCreateResponse userCreateResponse = userService.createUser(userCreateRequest);
+//
+//            adminRepository.save(Admin.builder()
+//                    .userId(userCreateResponse.userId())
+//                    .isActive(true)
+//                    .isVerified(true)
+//                    .isDefault(true)
+//                    .roleId(roleService.getRoleByName("SUPER_ADMIN").id())
+//                    .build());
+//
+//            log.info("Super admin created successfully");
+//        }
+//        log.info("Super admin found, skipping creation");
+//    }
 
 
     public PaginatedData searchAdmins(String searchParam, int page, int size) {

@@ -1,17 +1,15 @@
 package com.crawdwall_backend_api.utils;
 
-import lombok.*;
+import lombok.Builder;
 
-
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class Address {
-    private String street;
-    private String city;
-    private String state;
-    private String zip;
-    private String country;
+public record Address(
+        String city,
+        String streetAddress,
+        String postCode,
+        String addressStartDate
+){
+    
+
 }
+

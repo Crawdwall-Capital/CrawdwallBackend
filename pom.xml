@@ -58,16 +58,16 @@
         </dependency>
 
         <!-- WebFlux (only if you need reactive programming) -->
-        <!-- <dependency>
+       <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency> -->
+        </dependency>
 
         <!-- Thymeleaf (only if you need server-side templates) -->
-        <!-- <dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency> -->
+        </dependency>
 
         <!-- WebSocket (only if you need real-time features) -->
         <!-- <dependency>
@@ -121,11 +121,11 @@
         </dependency>
 
         <!-- Firebase -->
-        <dependency>
-            <groupId>com.google.firebase</groupId>
-            <artifactId>firebase-admin</artifactId>
-            <version>9.4.0</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.firebase</groupId>-->
+<!--            <artifactId>firebase-admin</artifactId>-->
+<!--            <version>9.4.0</version>-->
+<!--        </dependency>-->
 
         <!-- Cloudinary -->
         <dependency>

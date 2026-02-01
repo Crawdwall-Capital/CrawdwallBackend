@@ -3,10 +3,10 @@ package com.crawdwall_backend_api.utils.exception;
 
 
 
-import com.crawdwall_backend_api.utils.ApiResponse;
+
 import com.crawdwall_backend_api.utils.PaginatedData;
+import com.crawdwall_backend_api.utils.appsecurity.ApiResponse;
 import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,8 +18,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @ControllerAdvice
 public class CustomExceptionHandler {
 
-    @Value("${spring.servlet.multipart.max-file-size}")
-    private String maxFileSize;
+
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse> handleJsonParseError(HttpMessageNotReadableException ex) {
@@ -29,7 +28,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse> handleMaxSizeException(MaxUploadSizeExceededException ex) {
-        return new ResponseEntity<>(new ApiResponse(false,"File Size Must Be Less Than "+maxFileSize,null), HttpStatus.PAYLOAD_TOO_LARGE);
+        return new ResponseEntity<>(new ApiResponse(false,"File Size Must Be Less Than ",null), HttpStatus.PAYLOAD_TOO_LARGE);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -61,7 +60,7 @@ public class CustomExceptionHandler {
             return ResponseEntity.ok(new ApiResponse(
                     true,
                     exception.getMessage(),
-                    new PaginatedData(0, 0, 0, new Object[0])
+                    new PaginatedData(0, 0, 0, 0, true, null   )
             ));
         }else{
             return ResponseEntity.ok(new ApiResponse(

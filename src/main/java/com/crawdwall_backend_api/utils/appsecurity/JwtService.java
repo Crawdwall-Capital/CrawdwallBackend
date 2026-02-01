@@ -1,6 +1,7 @@
 package com.crawdwall_backend_api.utils.appsecurity;
 
 
+
 import com.crawdwall_backend_api.utils.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -27,6 +28,7 @@ public class JwtService {
     @Value("${application.security.secret-key}")
     private String SECRET_KEY;
 
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -34,9 +36,9 @@ public class JwtService {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         T val = claimsResolver.apply(claims);
-        if (log.isDebugEnabled()) {
-            log.debug("[JWT] extractClaim END -> {}", (val == null ? "null" : val.toString()));
-        }
+
+            log.info("[JWT] extractClaim END -> {}", (val == null ? "null" : val.toString()));
+
         return val;
     }
 
@@ -45,9 +47,9 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, String username) {
-        if (log.isDebugEnabled()) {
-            log.debug("[JWT] generateToken username={}", username);
-        }
+
+            log.info("[JWT] generateToken username={}", username);
+
         try {
             Map<String, Object> mutable = new HashMap<>(extraClaims);
             mutable.put("type", TokenType.ACCESS_TOKEN.name());
@@ -61,15 +63,15 @@ public class JwtService {
             log.info("[JWT] Access token generated successfully, length={}", jwt.length());
             return jwt;
         } catch (Exception e) {
-            log.error("[JWT] generateToken ERROR: {}", e.getMessage(), e);
+            log.info("[JWT] generateToken ERROR: {}", e.getMessage(), e);
             return "";
         }
     }
 
     public String generateRefreshToken(String username, Map<String, Object> extraClaims) {
-        if (log.isDebugEnabled()) {
-            log.debug("[JWT] generateRefreshToken username={}", username);
-        }
+
+            log.info("[JWT] generateRefreshToken username={}", username);
+
         try {
             Map<String, Object> mutable = new HashMap<>(extraClaims);
             mutable.put("type", TokenType.REFRESH_TOKEN.name());
@@ -83,7 +85,7 @@ public class JwtService {
             log.info("[JWT] Refresh token generated successfully, length={}", jwt.length());
             return jwt;
         } catch (Exception e) {
-            log.error("[JWT] generateRefreshToken ERROR: {}", e.getMessage(), e);
+            log.info("[JWT] generateRefreshToken ERROR: {}", e.getMessage(), e);
             return "";
         }
     }
@@ -91,11 +93,11 @@ public class JwtService {
     public void validateToken(final String token) {
         try {
             Jwts.parserBuilder().setSigningKey(getSignInKey()).build();
-            if (log.isDebugEnabled()) {
-                log.debug("[JWT] validateToken: parser built successfully");
-            }
+
+                log.info("[JWT] validateToken: parser built successfully");
+
         } catch (Exception e) {
-            log.error("[JWT] validateToken ERROR: {}", e.getMessage(), e);
+            log.info("[JWT] validateToken ERROR: {}", e.getMessage(), e);
         }
     }
 
@@ -103,12 +105,12 @@ public class JwtService {
         try {
             final String username = extractUsername(token);
             boolean ok = (username != null && username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-            if (log.isDebugEnabled()) {
-                log.debug("[JWT] isTokenValid(userDetails): {}", ok);
-            }
+
+                log.info("[JWT] isTokenValid(userDetails): {}", ok);
+
             return ok;
         } catch (Exception e) {
-            log.error("[JWT] isTokenValid(userDetails) ERROR: {}", e.getMessage(), e);
+            log.info("[JWT] isTokenValid(userDetails) ERROR: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -117,21 +119,21 @@ public class JwtService {
         try {
             Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token);
             boolean ok = !isTokenExpired(token);
-            if (log.isDebugEnabled()) {
-                log.debug("[JWT] isTokenValid(token): {}", ok);
-            }
+
+                log.info("[JWT] isTokenValid(token): {}", ok);
+
             return ok;
         } catch (Exception e) {
-            log.error("[JWT] isTokenValid(token) ERROR: {}", e.getMessage(), e);
+            log.info("[JWT] isTokenValid(token) ERROR: {}", e.getMessage(), e);
             return false;
         }
     }
 
     private boolean isTokenExpired(String token) {
         boolean expired = extractExpiration(token).before(new Date());
-        if (log.isDebugEnabled()) {
-            log.debug("[JWT] isTokenExpired: {}", expired);
-        }
+
+            log.info("[JWT] isTokenExpired: {}", expired);
+
         return expired;
     }
 
@@ -146,12 +148,12 @@ public class JwtService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            if (log.isDebugEnabled()) {
-                log.debug("[JWT] extractAllClaims OK (sub={})", c.getSubject());
-            }
+
+                log.info("[JWT] extractAllClaims OK (sub={})", c.getSubject());
+
             return c;
         } catch (Exception e) {
-            log.error("[JWT] extractAllClaims ERROR: {}", e.getMessage(), e);
+            log.info("[JWT] extractAllClaims ERROR: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -160,12 +162,12 @@ public class JwtService {
         try {
             byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
             Key key = Keys.hmacShaKeyFor(keyBytes);
-            if (log.isDebugEnabled()) {
-                log.debug("[JWT] getSignInKey OK (len={})", keyBytes.length);
-            }
+
+                log.info("[JWT] getSignInKey OK (len={})", keyBytes.length);
+
             return key;
         } catch (Exception e) {
-            log.error("[JWT] getSignInKey ERROR: {}", e.getMessage(), e);
+            log.info("[JWT] getSignInKey ERROR: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -178,12 +180,12 @@ public class JwtService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            if (log.isDebugEnabled()) {
-                log.debug("[JWT] parse OK (sub={})", body.getSubject());
-            }
+
+                log.info("[JWT] parse OK (sub={})", body.getSubject());
+            
             return body;
         } catch (Exception e) {
-            log.error("[JWT] parse ERROR: {}", e.getMessage(), e);
+            log.info("[JWT] parse ERROR: {}", e.getMessage(), e);
             throw e;
         }
     }

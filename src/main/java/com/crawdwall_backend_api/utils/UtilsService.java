@@ -1,36 +1,34 @@
 package com.crawdwall_backend_api.utils;
 
 
+
 import com.crawdwall_backend_api.utils.exception.ErrorProcessingRequestException;
 import com.crawdwall_backend_api.utils.exception.InvalidInputException;
 import com.crawdwall_backend_api.utils.exception.InvalidOperationException;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.*;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Random;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-@EnableScheduling
+
+@Slf4j
 public class UtilsService {
 
 
@@ -72,7 +70,7 @@ public class UtilsService {
     /**
      * This method converts a multipartfile to file
      */
-    public static File convertMultipartFileToFile(@NotNull MultipartFile multipartFile) {
+    public static File convertMultipartFileToFile( MultipartFile multipartFile) {
         File file = new File(Objects.requireNonNull(multipartFile.getOriginalFilename()));
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(multipartFile.getBytes());
@@ -84,24 +82,7 @@ public class UtilsService {
     }
 
 
-    /**
-     * Strips HTML content from a WYSIWYG editor to plain text.
-     * Removes all HTML tags, scripts, and styles, then normalizes whitespace.
-     * @param html The HTML string to be processed
-     * @return A plain text string with normalized whitespace
-     */
-    public static String stripWysiwygContent(String html) {
-        // Parse the HTML
-        Document doc = Jsoup.parse(html);
 
-        // Remove script and style elements
-        doc.select("script, style").forEach(Element::remove);
-
-        // Get clean text
-        String text = doc.text();
-
-        return text.trim().replaceAll("\\s+", " ");
-    }
 
     /**
      * Generates a random, visually appealing hex color code suitable for bright backgrounds.
@@ -224,6 +205,73 @@ public class UtilsService {
         }
         // ✔ valid if issue date is today or in the past
     }
+
+     // Calls endpoint every 45 seconds (45,000 milliseconds)
+     @Scheduled(fixedRate = 45000)
+     public void pingServer() {
+         try {
+             String endpoint =  "https://ghealead-backend-v1.onrender.com/api/v1/utilities/public/stay-up";
+             
+            log.info("Pinging server at: {}", endpoint);
+             
+             // Make the GET request
+             ResponseEntity<ApiResponse> response = restTemplate.getForEntity(
+                 endpoint, 
+                 ApiResponse.class
+             );
+             
+             if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Server ping successful: {}", response.getBody().message());
+             } else {
+                 log.info("Server ping returned status: {}", response.getStatusCode());
+             }
+             
+         } catch (Exception e) {
+           log.info("Failed to ping server: {}", e.getMessage());
+         }
+     }
+
+     public <T> PaginatedData paginate(int page, int size, Function<Pageable, Page<T>> fetchFunction) {
+        if (page < 1 || size < 1 || size > 100) {
+            return buildEmptyResult(page);
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<T> result = fetchFunction.apply(pageable);
+
+        return buildPaginatedResult(result, page);
+    }
+    public PaginatedData buildEmptyResult(int page) {
+        return PaginatedData.builder()
+                .data(Collections.emptyList())
+                .totalElements(0L)
+                .totalPage(0)
+                .pageNumber(page)
+                .numberOfElements(0)
+                .build();
+    }
+
+    private <T> PaginatedData buildPaginatedResult(Page<T> pageResult, int requestedPage) {
+        return PaginatedData.builder()
+                .data(pageResult.getContent())
+                .totalElements(pageResult.getTotalElements())
+                .totalPage(pageResult.getTotalPages())
+                .pageNumber(requestedPage)
+                .numberOfElements(pageResult.getNumberOfElements())
+                .build();
+    }
+
+    // Optional: For empty page with existing total
+    private PaginatedData buildEmptyPageWithTotal(int page, long totalElements, int totalPages) {
+        return PaginatedData.builder()
+                .data(Collections.emptyList())
+                .totalElements(totalElements)
+                .totalPage(totalPages)
+                .pageNumber(page)
+                .numberOfElements(0)
+                .build();
+    }
+    
 
 }
 
