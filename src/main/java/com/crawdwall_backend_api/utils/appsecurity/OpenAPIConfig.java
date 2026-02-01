@@ -23,12 +23,12 @@ public class OpenAPIConfig {
    @Bean
     public OpenAPI serviceAPI() {
         return new OpenAPI()
-                .info(new Info().title("ghealead Portal API")
-                        .description("REST API for ghealead Portal application")
+                .info(new Info().title("Crawdwall Portal API")
+                        .description("REST API for Crawdwall Portal application")
                         .version("v1.0.0")
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
-                .externalDocs(new ExternalDocumentation()
+                        .externalDocs(new ExternalDocumentation()
                         .description("Project Documentation")
-                        .url("https://github.com/ghealead-portal-api"));
+                        .url("https://github.com/Crawdwall-portal-api"));
     }
 }
