@@ -11,6 +11,7 @@ import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpType;
 import com.crawdwall_backend_api.utils.ApiResponseMessages;
 import com.crawdwall_backend_api.utils.appsecurity.JwtService;
 
+import com.crawdwall_backend_api.utils.emailsenderservice.EmailSenderService;
 import com.crawdwall_backend_api.utils.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,18 +32,18 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final UserOtpService userOtpService;
 	@Qualifier("mailgunEmailSenderServiceImpl")
-//	private final EmailSenderService emailSenderService;
+	private final EmailSenderService emailSenderService;
 	private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtService jwtService;
 
 
-	public UserService(UserRepository userRepository, UserOtpService userOtpService, JwtService jwtService
-//			EmailSenderService emailSenderService
+	public UserService(UserRepository userRepository, UserOtpService userOtpService, JwtService jwtService,
+			EmailSenderService emailSenderService
     ) {
 		this.userRepository = userRepository;
 		this.userOtpService = userOtpService;
-//		this.emailSenderService = emailSenderService;
+		this.emailSenderService = emailSenderService;
         this.jwtService = jwtService;
 	}
 
@@ -93,7 +94,7 @@ public class UserService {
 				savedUser.setPassword(password);
                 savedUser = userRepository.save(savedUser);
                 Map<String, String> otp = userOtpService.generateOtpForUser(savedUser.getId(), UserOtpType.ACCOUNT_ACTIVATION);
-//                emailSenderService.sendAdminAccountActivationEmail(savedUser.getEmailAddress(), userCreateRequest.firstName()+" "+userCreateRequest.lastName(), password,otp.get("otp"));
+             //   emailSenderService.sendAdminAccountActivationEmail(savedUser.getEmailAddress(), userCreateRequest.firstName()+" "+userCreateRequest.lastName(), password,otp.get("otp"));
                 return buildUserCreateResponseWithOtp(savedUser, otp.get("otp"));
             }else{
 				savedUser.setPassword(passwordEncoder.encode(userCreateRequest.password()));
@@ -103,7 +104,7 @@ public class UserService {
         Map<String, String> otp = userOtpService.generateOtpForUser(savedUser.getId(), UserOtpType.ACCOUNT_ACTIVATION);
 
         if(userCreateRequest.userType() == UserType.COMPANY){
-//           emailSenderService.sendCompanyAccountActivationEmail(savedUser.getEmailAddress(),savedUser.getFirstName() ,otp.get("expiresAt"), otp.get("otp"));
+           emailSenderService.sendCompanyAccountActivationEmail(savedUser.getEmailAddress(),savedUser.getFirstName() ,otp.get("expiresAt"), otp.get("otp"));
        }
       
 
