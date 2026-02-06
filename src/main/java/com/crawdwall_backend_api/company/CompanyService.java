@@ -51,29 +51,31 @@ public class CompanyService {
 
     
     public void createCompany(CompanyCreateRequest request) {
+        // Validate password confirmation
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new InvalidInputException("Password and confirm password do not match");
+        }
+        
+        // Check if company name already exists
         if (companyRepository.existsByCompanyName(request.companyName())) {
             throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NAME_ALREADY_EXISTS);
         }
+        
+        // Check if company email already exists
         if (companyRepository.existsByCompanyEmail(request.companyEmail())) {
             throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_EMAIL_ALREADY_EXISTS);
         }
-        if (companyRepository.existsByCompanyPhone(request.companyPhone())) {
-            throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_PHONE_ALREADY_EXISTS);
-        }
-        
-        if (companyRepository.existsByCompanyRegistrationNumber(request.companyRegistrationNumber())) {
-            throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_REGISTRATION_NUMBER_ALREADY_EXISTS);
-        }
 
+        // Create user account for the company
         UserCreateResponse userCreateResponse = userService.createUser(UserCreateRequest.builder()
-                .firstName(request.companyName())
-                .lastName(request.companyName())
+                .firstName(request.companyName()) // Use company name as first name
+                .lastName("Company") // Default last name
                 .emailAddress(request.companyEmail())
-                .phoneNumber(request.companyPhone())
                 .password(request.password())
                 .userType(UserType.COMPANY)
                 .build());
     
+        // Create company entity with minimal required data
         Company company = buildCompany(request, userCreateResponse.userId());
         companyRepository.save(company);
     }
@@ -261,13 +263,11 @@ public class CompanyService {
         return Company.builder()
                 .companyName(request.companyName())
                 .companyEmail(request.companyEmail())
-                .companyPhone(request.companyPhone())
-                .companyWebsite(request.companyWebsite())
-                .companyLogo(request.companyLogo())
-                .companyRegistrationNumber(request.companyRegistrationNumber())
-                .companyRegistrationDate(request.companyRegistrationDate())
-                .companyType(request.companyType())
                 .userId(userId)
+                .isActive(false) // Initially inactive until verified
+                .isDeleted(false)
+                .isVerified(false)
+                .status(Status.PENDING)
                 .build();
     }
 
