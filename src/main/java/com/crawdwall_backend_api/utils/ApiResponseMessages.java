@@ -33,4 +33,23 @@ public interface ApiResponseMessages {
     String ERROR_COMPANY_REGISTRATION_NUMBER_ALREADY_EXISTS = "Company registration number already exists.";
     String ERROR_COMPANY_NOT_FOUND = "Company not found.";
     String ERROR_TERMS_AND_CONDITION_ERROR = "You must accept the terms and conditions to proceed";
+
+    
+    String ERROR_KYC_COMPANY_PROFILE_NOT_FOUND = "Company profile KYC information not found.";
+    String ERROR_KYC_COMPANY_PROFILE_ALREADY_EXISTS = "Company profile KYC information already exists.";
+    String ERROR_KYC_COMPANY_PROFILE_ALREADY_SUBMITTED = "Company profile KYC has already been submitted and cannot be modified.";
+    String ERROR_KYC_INVALID_DATE_ESTABLISHED = "Date established cannot be in the future.";
+    String ERROR_KYC_INVALID_EMAIL_FORMAT = "Please provide a valid email address.";
+    String ERROR_KYC_INVALID_PHONE_FORMAT = "Please provide a valid phone number.";
+    String ERROR_KYC_INVALID_WEBSITE_FORMAT = "Please provide a valid website URL.";
+    String ERROR_KYC_ORGANIZATION_NAME_REQUIRED = "Organization name is required.";
+    String ERROR_KYC_ORGANIZATION_TYPE_REQUIRED = "Organization type is required.";
+    String ERROR_KYC_COUNTRY_REGISTRATION_REQUIRED = "Country of registration is required.";
+    String ERROR_KYC_DATE_ESTABLISHED_REQUIRED = "Date established is required.";
+    String ERROR_KYC_BUSINESS_ADDRESS_REQUIRED = "Business address is required.";
+    String ERROR_KYC_COMPANY_EMAIL_REQUIRED = "Company email is required.";
+    String ERROR_KYC_PHONE_NUMBER_REQUIRED = "Phone number is required.";
+    String SUCCESS_KYC_COMPANY_PROFILE_SAVED = "Company profile information saved successfully.";
+    String SUCCESS_KYC_COMPANY_PROFILE_SAVED_AND_CONTINUE = "Company profile saved successfully. You can now proceed to the next step.";
+    String SUCCESS_KYC_COMPANY_PROFILE_RETRIEVED = "Company profile information retrieved successfully.";
 }
