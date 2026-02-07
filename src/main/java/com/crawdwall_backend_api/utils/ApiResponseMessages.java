@@ -32,4 +32,5 @@ public interface ApiResponseMessages {
     String ERROR_COMPANY_PHONE_ALREADY_EXISTS = "Company phone already exists.";
     String ERROR_COMPANY_REGISTRATION_NUMBER_ALREADY_EXISTS = "Company registration number already exists.";
     String ERROR_COMPANY_NOT_FOUND = "Company not found.";
+    String ERROR_TERMS_AND_CONDITION_ERROR = "You must accept the terms and conditions to proceed";
 }

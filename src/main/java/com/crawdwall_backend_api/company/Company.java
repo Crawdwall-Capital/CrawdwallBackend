@@ -33,6 +33,8 @@ private   boolean isVerified;
 private   LocalDateTime verifiedAt;
 private   String userId;
 private   Status status;
+private   boolean onboardingAgreedTermsAndConditions;
+private  LocalDateTime agreedTermsAndConditionAt; 
 
 
 
