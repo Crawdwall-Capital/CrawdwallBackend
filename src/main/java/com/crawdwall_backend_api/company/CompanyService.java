@@ -51,10 +51,7 @@ public class CompanyService {
 
     
     public void createCompany(CompanyCreateRequest request) {
-        // Validate password confirmation
-        if (!request.password().equals(request.confirmPassword())) {
-            throw new InvalidInputException("Password and confirm password do not match");
-        }
+      
         
         // Check if company name already exists
         if (companyRepository.existsByCompanyName(request.companyName())) {
@@ -66,6 +63,12 @@ public class CompanyService {
             throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_EMAIL_ALREADY_EXISTS);
         }
 
+        // Check if Terms and condition are accepted
+        if (!request.acceptTermsAndConditions()) {
+        throw new InvalidInputException(ApiResponseMessages.ERROR_TERMS_AND_CONDITION_ERROR);
+}
+         
+         
         // Create user account for the company
         UserCreateResponse userCreateResponse = userService.createUser(UserCreateRequest.builder()
                 .firstName(request.companyName()) // Use company name as first name
