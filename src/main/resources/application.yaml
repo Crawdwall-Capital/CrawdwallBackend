@@ -10,7 +10,7 @@ spring:
   data:
     mongodb:
       uri: mongodb+srv://crawdwallcapital_db_user:crawdwallcapital@crawdwallscluster.ll2txoj.mongodb.net/crawdwall_db?retryWrites=true&w=majority
-#        uri: mongodb+srv://crawdwallcapital_db_user:TVZ5f1QGCedSM6Zf@myappcluster.gvc03hy.mongodb.net/crawdwall?retryWrites=true&w=majority
+
 
   mail:
     host: ${SMTP_HOST:smtp-relay.brevo.com}
@@ -58,9 +58,12 @@ application:
     phoneNumber: ${SUPER_ADMIN_PHONE:1234567890}
 
 springdoc:
+  api-docs:
+    path: /api-docs
   swagger-ui:
-    path: /swagger
-    operations-sorter: method
+    path: /swagger-ui.html
+    display-request-duration: true
+    try-it-out-enabled: true
 
 logging:
   level:
