@@ -20,6 +20,10 @@ import com.crawdwall_backend_api.userauthmgt.user.request.PasswordChangeRequest;
 import com.crawdwall_backend_api.userauthmgt.user.response.UserVerifyOtpRequest;
 
 import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpType;
+import com.crawdwall_backend_api.company.request.CompanyProfileSetUpCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyLeaderShipOwnerShipCreateRequest;
+import com.crawdwall_backend_api.company.request.DocumentEntityValueCreateRequestSetUp;
+
 
 @RestController
 @RequestMapping("/api/v1/company")
@@ -135,5 +139,40 @@ public class CompanyController {
         .build());
     }
     
+    @PostMapping("/private/setup-profile/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyProfile(@PathVariable(name = "companyId") String companyId, @RequestBody CompanyProfileSetUpCreateRequest request) {
+        companyService.setUpCompanyProfile(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company profile setup successfully")
+        .build());
+    }
+
+
+    
+
+    @PostMapping("/private/setup-ownership/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyLeaderShipOwnerShip(@PathVariable(name = "companyId") String companyId, @RequestBody CompanyLeaderShipOwnerShipCreateRequest request) {
+        companyService.setUpCompanyLeaderShipOwnerShip(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company leader and ownership setup successfully")
+        .build());
+    }
+
+    @PostMapping("/private/setup-credibility/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyTrackRecordCredibility(@PathVariable(name = "companyId") String companyId, @RequestBody CompanyTrackRecordCredibilityCreateRequest request) {
+        companyService.setUpCompanyTrackRecordCredibility(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company track record credibility setup successfully")
+        .build());
+    }
+
+    @PostMapping("/private/setup-compliance/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyComplianceAndIdentity(@PathVariable(name = "companyId") String companyId, @RequestBody DocumentEntityValueCreateRequestSetUp request) {
+        companyService.setUpCompanyComplianceAndIdentity(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company compliance and identity setup successfully")
+        .build());
+    }
+
     
 }

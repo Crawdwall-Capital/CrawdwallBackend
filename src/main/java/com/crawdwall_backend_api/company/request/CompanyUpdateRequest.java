@@ -1,21 +1,22 @@
 package com.crawdwall_backend_api.company.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.crawdwall_backend_api.company.CompanyType;
+import com.crawdwall_backend_api.company.CompanySocialMediaType;
+
+import java.time.LocalDate;
 
 import lombok.Builder;
 
 @Builder
 public record CompanyUpdateRequest(
     String companyName,
-    String companyEmail,
     String companyPhone,
     String companyWebsite,
-    String companyLogo,
-    String companyRegistrationNumber,
-    String companyRegistrationDate,
-    CompanyType companyType
+    LocalDate companyEstablishedDate,
+    CompanyType companyType,
+    CompanySocialMediaType companySocialMediaType,
+    String companySocialMediaUrl
 ) {
     
 }

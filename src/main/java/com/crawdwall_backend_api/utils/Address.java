@@ -6,6 +6,7 @@ import lombok.Builder;
 public record Address(
         String city,
         String streetAddress,
+        String country,
         String postCode,
         String addressStartDate
 ){
