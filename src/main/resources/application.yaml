@@ -2,6 +2,7 @@ server:
   port: ${SERVER_PORT:8088}
 
 spring:
+
   servlet:
     multipart:
       max-file-size: 3MB

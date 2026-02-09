@@ -485,12 +485,18 @@ public class CompanyService {
 
     CompanyAuthResponse authenticateCompany(UserAuthRequest request) {
         UserResponse userResponse = userService.authenticateUser(request, UserType.COMPANY);
-        if (!userResponse.isVerified() && !userResponse.isActive()){
+        log.info("#3 User authenticated - ID: {}", userResponse.userId());
+
+        if (!userResponse.isVerified() && !userResponse.isActive()) {
+            log.warn("#4 User verification/activation failed");
             return CompanyAuthResponse.builder().userResponse(userResponse).build();
         }
+
+        log.info("#5 Finding company for user ID: {}", userResponse.userId());
         Company company = companyRepository.findByUserId(userResponse.userId())
                 .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_USER_NOT_FOUND));
         if (company.getStatus() != Status.ACTIVE) {
+            log.error("#8 Company status invalid: {}", company.getStatus());
             throw new UnauthorizedException(ApiResponseMessages.ERROR_COMPANY_APP_ACCESS_DISABLED);
         }
         return CompanyAuthResponse.builder()

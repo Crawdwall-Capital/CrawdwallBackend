@@ -18,8 +18,8 @@ public record UserResponse(
         String profilePictureUrl,
         LocalDate dateOfBirth,
         boolean isActive,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt,
+//        LocalDateTime createdAt,
+//        LocalDateTime updatedAt,
         boolean isVerified
         
 ) {
