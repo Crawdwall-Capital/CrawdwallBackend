@@ -119,7 +119,7 @@ public class CompanyController {
         .build());
     }
 
-    @PutMapping("/private/initiate-reset-password/{emailAddress}")
+    @PutMapping("/public/initiate-reset-password/{emailAddress}")
     public ResponseEntity<ApiResponse> initiateResetPassword(@PathVariable(name = "emailAddress") String emailAddress) {
         companyService.initiateResetPassword(emailAddress);
         return ResponseEntity.ok(ApiResponse.builder()
@@ -127,7 +127,7 @@ public class CompanyController {
         .build());
     }
     
-    @PutMapping("/private/verify-otp")
+    @PutMapping("/public/verify-otp")
     public ResponseEntity<ApiResponse> verifyOtp(@RequestBody UserVerifyOtpRequest request) {
         companyService.verifyOtp(request);
         return ResponseEntity.ok(ApiResponse.builder()
@@ -135,7 +135,7 @@ public class CompanyController {
         .build());
     }
     
-    @PutMapping("/private/resend-otp/{emailAddress}")
+    @PutMapping("/public/resend-otp/{emailAddress}")
     public ResponseEntity<ApiResponse> resendOtp(@PathVariable(name = "emailAddress") String emailAddress, @RequestParam(name = "otpType") UserOtpType userOtpType) {
         companyService.resendOtp(emailAddress, userOtpType);
         return ResponseEntity.ok(ApiResponse.builder()
