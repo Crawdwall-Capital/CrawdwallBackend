@@ -122,7 +122,7 @@ public class DefaultRouteValidator {
         switch (userRole) {
             case "ADMIN":
                 return isAdminEndpoint(req);
-            case "APP_USER":
+            case "COMPANY":
                 return isCompanyEndpoint(req);
             case "SUPER_ADMIN":
                 return isSuperAdminEndpoint(req);
