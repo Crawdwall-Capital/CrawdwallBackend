@@ -23,6 +23,10 @@ import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpType;
 import com.crawdwall_backend_api.company.request.CompanyProfileSetUpCreateRequest;
 import com.crawdwall_backend_api.company.request.CompanyLeaderShipOwnerShipCreateRequest;
 import com.crawdwall_backend_api.company.request.DocumentEntityValueCreateRequestSetUp;
+import com.crawdwall_backend_api.company.request.CompanyDeclarationConsentCreateRequest;
+import com.crawdwall_backend_api.company.response.CompanyAuthResponse;
+import com.crawdwall_backend_api.userauthmgt.user.request.UserAuthRequest;
+import com.crawdwall_backend_api.company.response.CompanyAuthResponse;
 
 
 @RestController
@@ -174,5 +178,25 @@ public class CompanyController {
         .build());
     }
 
-    
+    @PostMapping("/private/setup-declaration-consent/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyDeclarationConsent(@PathVariable(name = "companyId") String companyId, @RequestBody CompanyDeclarationConsentCreateRequest request) {
+        companyService.setUpCompanyDeclarationConsent(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company declaration consent setup successfully")
+        .build());
+    }
+
+
+    @PostMapping("/public/authenticate")
+    ResponseEntity<ApiResponse> authenticate(@RequestBody UserAuthRequest request) {
+        CompanyAuthResponse companyAuthResponse = companyService.authenticateCompany(request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Company authenticated successfully.")
+                .data(companyAuthResponse)
+                .build());
+    }
+
+
+
 }

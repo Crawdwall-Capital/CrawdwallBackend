@@ -47,5 +47,10 @@ private   DocumentEntityValue proofOfAddressDocument;
 private   DocumentEntityValue governmentIdDocument;
 private   DocumentEntityValue complianceAndIdentityDocument;
 private   CompanyDeclarationConsent companyDeclarationConsent;
-
+private   boolean isKycCompleted;
+private   boolean isDocumentVerified;
+private   LocalDateTime kycCompletedAt;
+private   LocalDateTime documentVerifiedAt;
+private   LocalDateTime kycStartedAt;
+private   LocalDateTime documentStartedAt;
     }

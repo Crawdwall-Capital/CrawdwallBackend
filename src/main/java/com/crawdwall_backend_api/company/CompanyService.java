@@ -46,6 +46,16 @@ import com.crawdwall_backend_api.company.request.CompanyLeaderShipOwnerShipCreat
 import com.crawdwall_backend_api.company.CompanyKycOneStep;
 import com.crawdwall_backend_api.company.request.DocumentEntityValueCreateRequestSetUp;
 import com.crawdwall_backend_api.company.request.DocumentEntityValueCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyDeclarationConsentCreateRequest;
+import com.crawdwall_backend_api.company.CompanyDeclarationConsent;
+import com.crawdwall_backend_api.company.response.CompanyAuthResponse;
+import com.crawdwall_backend_api.userauthmgt.user.request.UserAuthRequest;
+import com.crawdwall_backend_api.userauthmgt.user.response.UserResponse;
+import com.crawdwall_backend_api.utils.exception.UnauthorizedException;
+import com.crawdwall_backend_api.utils.appsecurity.JwtService;
+import java.util.Map;
+import java.util.HashMap;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
@@ -55,7 +65,7 @@ public class CompanyService {
     private final UtilsService utilsService;
     private final UserService userService;
     private final MongoTemplate mongoTemplate;
-
+    private final JwtService jwtService;
     
     public void createCompany(CompanyCreateRequest request) {
       
@@ -319,6 +329,7 @@ public class CompanyService {
     Company company = companyRepository.findByUserId(user.getId())
             .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND, true, false));
     company.setVerified(true);
+    company.setStatus(Status.ACTIVE);
     company.setVerifiedAt(LocalDateTime.now());
     company.setActive(true);
     companyRepository.save(company);
@@ -343,10 +354,12 @@ public class CompanyService {
         company.setCompanyEstablishedDate(request.establishedDate());
         company.setCompanySocialMediaType(request.companySocialMediaType());
         company.setCompanySocialMediaUrl(request.companySocialMediaUrl());
-        company.setCompanyAddress(request.address());
         company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.COMPANY_PROFILE_SETUP));
+        company.setCompanyAddress(request.address());
         companyRepository.save(company);
     }
+
+    
 
     private Set<CompanyKycOneStep> setUpCompanyKycOneStep(Company company,CompanyKycOneStep companyKycOneStep) {
         Set<CompanyKycOneStep> companyKycOneSteps = company.getCompanyKycOneSteps();
@@ -451,6 +464,78 @@ public class CompanyService {
                 .build();
     }
 
-   
+    public void setUpCompanyDeclarationConsent(String companyId,CompanyDeclarationConsentCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        company.setCompanyDeclarationConsent(buildCompanyDeclarationConsent(request));
+        company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.DECLARATION_AND_CONSENT));
+        companyRepository.save(company);
+    }
+    
+    private CompanyDeclarationConsent buildCompanyDeclarationConsent(CompanyDeclarationConsentCreateRequest request) {
+        return CompanyDeclarationConsent.builder()
+                .agreedToCrawdwallTermsAndConditions(request.isAgreedToCrawdwallTermsAndConditions())
+                .confirmedAllSubmittedInformationAreCorrect(request.isConfirmedAllSubmittedInformationAreCorrect())
+                .authorizedCrawdwallToPerformBackgroundChecks(request.isAuthorizedCrawdwallToPerformBackgroundChecks())
+                .declarationConsentSignatureUrl(request.getDeclarationConsentSignatureUrl())
+                .declarationConsentSignedAt(LocalDateTime.now())
+                .build();
+    }
+
+
+    CompanyAuthResponse authenticateCompany(UserAuthRequest request) {
+        UserResponse userResponse = userService.authenticateUser(request, UserType.COMPANY);
+        if (!userResponse.isVerified() && !userResponse.isActive()){
+            return CompanyAuthResponse.builder().userResponse(userResponse).build();
+        }
+        Company company = companyRepository.findByUserId(userResponse.userId())
+                .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_USER_NOT_FOUND));
+        if (company.getStatus() != Status.ACTIVE) {
+            throw new UnauthorizedException(ApiResponseMessages.ERROR_COMPANY_APP_ACCESS_DISABLED);
+        }
+        return CompanyAuthResponse.builder()
+                .token(generateJwtForCompany(company, userResponse))
+                .companyId(company.getId()).userId(userResponse.userId())
+                .refreshToken(generateRefreshToken(company, userResponse))
+                .kycCompleted(company.isKycCompleted())
+                .documentVerified(company.isDocumentVerified())
+                .userResponse(userResponse).build();
+
+    }
+
+     /**
+         * Generates a refresh JWT token for a company.
+         *
+         * @param company       company entity
+         * @param userResponse  user information
+         * @return signed refresh token
+         */
+     private String generateRefreshToken(Company company, UserResponse userResponse) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("companyId", company.getId());
+        extraClaims.put("userId", userResponse.userId());
+        extraClaims.put("email", userResponse.emailAddress());
+        extraClaims.put("userType", userResponse.userType());
+        return jwtService.generateRefreshToken(userResponse.emailAddress(), extraClaims);
+    }
+
+    /**
+     * Generates an authentication JWT token for a company.
+     *
+     * @param company      company entity
+     * @param userResponse user details
+     * @return JWT token
+     */
+    private String generateJwtForCompany(Company company, UserResponse userResponse) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("companyId", company.getId());
+        extraClaims.put("userId", userResponse.userId());
+        extraClaims.put("email", userResponse.emailAddress());
+        extraClaims.put("userType", userResponse.userType());
+        return jwtService.generateToken(extraClaims, userResponse.emailAddress());
+    }
+
+
+
 
 }

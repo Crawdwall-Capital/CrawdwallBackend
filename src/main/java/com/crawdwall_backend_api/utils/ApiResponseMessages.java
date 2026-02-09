@@ -39,4 +39,5 @@ public interface ApiResponseMessages {
     String ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_HAS_DUPLICATE_ADMIN_PHONES = "Company leader and ownership setup has duplicate admin phones. Each admin phone must be unique.";
     String ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_REQUEST_IS_EMPTY = "At least one admin is required to setup company leader and ownership.";
     String ERROR_COMPANY_TRACK_RECORD_CREDIBILITY_MAJOR_PROJECTS_DELIVERED_SOCIAL_MEDIA_LINKS_IS_REQUIRED = "At least one major project delivered social media link is required to setup company track record credibility.";
+    String ERROR_COMPANY_APP_ACCESS_DISABLED = "Company app access is disabled. Please contact support for assistance.";
 }
