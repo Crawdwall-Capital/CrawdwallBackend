@@ -7,6 +7,8 @@ import com.crawdwall_backend_api.utils.Status;
 import lombok.*;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Document(collection = "companies")
@@ -24,7 +26,7 @@ private   String companyWebsite;
 private   String companyLogo;
 @Indexed(unique = true)
 private   String companyRegistrationNumber;
-private   String companyRegistrationDate;
+private   LocalDate companyEstablishedDate;
 private   CompanyType companyType;
 private   Address companyAddress;
 private   boolean isActive;
@@ -35,7 +37,20 @@ private   String userId;
 private   Status status;
 private   boolean onboardingAgreedTermsAndConditions;
 private  LocalDateTime agreedTermsAndConditionAt; 
-
-
-
+private   CompanySocialMediaType companySocialMediaType;
+private   String companySocialMediaUrl;
+private   Set<CompanyKycOneStep> companyKycOneSteps;
+private   Set<CompanyLeaderShipOwnerShip> companyLeaderShipOwnerShip;
+private   CompanyTrackRecordCredibility companyTrackRecordCredibility;
+private   DocumentEntityValue taxIdentificationDocument;
+private   DocumentEntityValue proofOfAddressDocument;
+private   DocumentEntityValue governmentIdDocument;
+private   DocumentEntityValue complianceAndIdentityDocument;
+private   CompanyDeclarationConsent companyDeclarationConsent;
+private   boolean isKycCompleted;
+private   boolean isDocumentVerified;
+private   LocalDateTime kycCompletedAt;
+private   LocalDateTime documentVerifiedAt;
+private   LocalDateTime kycStartedAt;
+private   LocalDateTime documentStartedAt;
     }

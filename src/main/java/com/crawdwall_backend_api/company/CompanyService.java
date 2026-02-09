@@ -38,6 +38,23 @@ import com.crawdwall_backend_api.utils.exception.ResourceNotFoundException;
 import com.crawdwall_backend_api.userauthmgt.user.request.PasswordChangeRequest;
 
 import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpType;
+import com.crawdwall_backend_api.company.request.CompanyProfileSetUpCreateRequest;
+import java.util.Set;
+import java.util.HashSet;
+import com.crawdwall_backend_api.company.request.CompanyLeaderShipOwnerShipSetUpRequest;
+import com.crawdwall_backend_api.company.request.CompanyLeaderShipOwnerShipCreateRequest;
+import com.crawdwall_backend_api.company.CompanyKycOneStep;
+import com.crawdwall_backend_api.company.request.DocumentEntityValueCreateRequestSetUp;
+import com.crawdwall_backend_api.company.request.DocumentEntityValueCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyDeclarationConsentCreateRequest;
+import com.crawdwall_backend_api.company.CompanyDeclarationConsent;
+import com.crawdwall_backend_api.company.response.CompanyAuthResponse;
+import com.crawdwall_backend_api.userauthmgt.user.request.UserAuthRequest;
+import com.crawdwall_backend_api.userauthmgt.user.response.UserResponse;
+import com.crawdwall_backend_api.utils.exception.UnauthorizedException;
+import com.crawdwall_backend_api.utils.appsecurity.JwtService;
+import java.util.Map;
+import java.util.HashMap;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -48,7 +65,7 @@ public class CompanyService {
     private final UtilsService utilsService;
     private final UserService userService;
     private final MongoTemplate mongoTemplate;
-
+    private final JwtService jwtService;
     
     public void createCompany(CompanyCreateRequest request) {
       
@@ -105,12 +122,7 @@ public class CompanyService {
             }
         }
         
-        // Company Email
-        if (request.companyEmail() != null && !existing.getCompanyEmail().equals(request.companyEmail())) {
-            if (companyRepository.existsByCompanyEmail(request.companyEmail())) {
-                throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_EMAIL_ALREADY_EXISTS);
-            }
-        }
+      
         
         // Company Phone
         if (request.companyPhone() != null && !existing.getCompanyPhone().equals(request.companyPhone())) {
@@ -119,21 +131,12 @@ public class CompanyService {
             }
         }
         
-        // Company Registration Number
-        if (request.companyRegistrationNumber() != null && 
-            !existing.getCompanyRegistrationNumber().equals(request.companyRegistrationNumber())) {
-            if (companyRepository.existsByCompanyRegistrationNumber(request.companyRegistrationNumber())) {
-                throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_REGISTRATION_NUMBER_ALREADY_EXISTS);
-            }
-        }
+        
     }
     
     private void updateIfChanged(Company company, CompanyUpdateRequest request) {
         if (request.companyName() != null) {
             company.setCompanyName(request.companyName());
-        }
-        if (request.companyEmail() != null) {
-            company.setCompanyEmail(request.companyEmail());
         }
         if (request.companyPhone() != null) {
             company.setCompanyPhone(request.companyPhone());
@@ -141,17 +144,17 @@ public class CompanyService {
         if (request.companyWebsite() != null) {
             company.setCompanyWebsite(request.companyWebsite());
         }
-        if (request.companyLogo() != null) {
-            company.setCompanyLogo(request.companyLogo());
-        }
-        if (request.companyRegistrationNumber() != null) {
-            company.setCompanyRegistrationNumber(request.companyRegistrationNumber());
-        }
-        if (request.companyRegistrationDate() != null) {
-            company.setCompanyRegistrationDate(request.companyRegistrationDate());
+        if (request.companyEstablishedDate() != null) {
+            company.setCompanyEstablishedDate(request.companyEstablishedDate());
         }
         if (request.companyType() != null) {
             company.setCompanyType(request.companyType());
+        }
+        if (request.companySocialMediaType() != null) {
+            company.setCompanySocialMediaType(request.companySocialMediaType());
+        }
+        if (request.companySocialMediaUrl() != null) {
+            company.setCompanySocialMediaUrl(request.companySocialMediaUrl());
         }
      
     }
@@ -195,9 +198,11 @@ public class CompanyService {
                 .companyWebsite(company.getCompanyWebsite())
                 .companyLogo(company.getCompanyLogo())
                 .companyRegistrationNumber(company.getCompanyRegistrationNumber())
-                .companyRegistrationDate(company.getCompanyRegistrationDate())
+                .companyEstablishedDate(company.getCompanyEstablishedDate())
                 .companyType(company.getCompanyType())
                 .userId(company.getUserId())
+                .companySocialMediaType(company.getCompanySocialMediaType())
+                .companySocialMediaUrl(company.getCompanySocialMediaUrl())
                 .isActive(company.isActive())
                 .isDeleted(company.isDeleted())
                 .isVerified(company.isVerified())
@@ -324,6 +329,7 @@ public class CompanyService {
     Company company = companyRepository.findByUserId(user.getId())
             .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND, true, false));
     company.setVerified(true);
+    company.setStatus(Status.ACTIVE);
     company.setVerifiedAt(LocalDateTime.now());
     company.setActive(true);
     companyRepository.save(company);
@@ -336,6 +342,200 @@ public class CompanyService {
     public void resetPassword(UserResetPasswordRequest request) {
         userService.resetPassword(request);
     }
+
+
+    public void setUpCompanyProfile(String companyId,CompanyProfileSetUpCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        company.setCompanyName(request.companyName());
+        company.setCompanyPhone(request.companyPhone());
+        company.setCompanyWebsite(request.companyWebsite());
+        company.setCompanyType(request.companyType());
+        company.setCompanyEstablishedDate(request.establishedDate());
+        company.setCompanySocialMediaType(request.companySocialMediaType());
+        company.setCompanySocialMediaUrl(request.companySocialMediaUrl());
+        company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.COMPANY_PROFILE_SETUP));
+        company.setCompanyAddress(request.address());
+        companyRepository.save(company);
+    }
+
+    
+
+    private Set<CompanyKycOneStep> setUpCompanyKycOneStep(Company company,CompanyKycOneStep companyKycOneStep) {
+        Set<CompanyKycOneStep> companyKycOneSteps = company.getCompanyKycOneSteps();
+        if(companyKycOneSteps == null) {
+            companyKycOneSteps = new HashSet<>();
+        }
+       companyKycOneSteps.add(companyKycOneStep);
+       return companyKycOneSteps;
+    }
+
+    public void setUpCompanyLeaderShipOwnerShip(String companyId,CompanyLeaderShipOwnerShipCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        verifyCompanyLeaderShipOwnerShipRequest(request.getCompanyLeaderShipOwnerShipSetUpRequest());
+        Set<CompanyLeaderShipOwnerShip> companyLeaderShipOwnerShip = buildCompanyLeaderShipOwnerShip(request.getCompanyLeaderShipOwnerShipSetUpRequest());
+        company.setCompanyLeaderShipOwnerShip(companyLeaderShipOwnerShip);
+        company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.LEADER_AND_OWNERSHIP));
+        companyRepository.save(company);
+    }
+
+    private Set<CompanyLeaderShipOwnerShip> buildCompanyLeaderShipOwnerShip(Set<CompanyLeaderShipOwnerShipSetUpRequest> request) {
+            return request.stream().map(companyLeaderShipOwnerShipSetUpRequest -> CompanyLeaderShipOwnerShip.builder()
+                .companyAdminName(companyLeaderShipOwnerShipSetUpRequest.companyAdminName())
+                .companyAdminEmail(companyLeaderShipOwnerShipSetUpRequest.companyAdminEmail())
+                .companyAdminPhone(companyLeaderShipOwnerShipSetUpRequest.companyAdminPhone())
+                .companyAdminNationality(companyLeaderShipOwnerShipSetUpRequest.companyAdminNationality())
+                .companyAdminRole(companyLeaderShipOwnerShipSetUpRequest.companyAdminRole())
+                .levelOfControl(companyLeaderShipOwnerShipSetUpRequest.levelOfControl())
+                .isMainFounder(companyLeaderShipOwnerShipSetUpRequest.isMainFounder())
+                .build()).collect(Collectors.toSet());
+        }
+
+    private void verifyCompanyLeaderShipOwnerShipRequest(Set<CompanyLeaderShipOwnerShipSetUpRequest> request) {
+        if(request == null || request.isEmpty()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_REQUEST_IS_EMPTY);
+        }
+        boolean hasMainFounder = request.stream().anyMatch(CompanyLeaderShipOwnerShipSetUpRequest::isMainFounder);
+        if (!hasMainFounder) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_DOES_NOT_HAVE_MAIN_FOUNDER);
+        }
+
+        long mainFounderCount = request.stream().filter(CompanyLeaderShipOwnerShipSetUpRequest::isMainFounder).count();
+        if (mainFounderCount > 1) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_HAS_MULTIPLE_MAIN_FOUNDERS);
+        }
+
+        List<String> adminEmails = request.stream().map(CompanyLeaderShipOwnerShipSetUpRequest::companyAdminEmail).collect(Collectors.toList());
+        if (adminEmails.stream().distinct().count() != adminEmails.size()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_HAS_DUPLICATE_ADMIN_EMAILS);
+        }
+
+        List<String> adminPhones = request.stream().map(CompanyLeaderShipOwnerShipSetUpRequest::companyAdminPhone).collect(Collectors.toList());
+        if (adminPhones.stream().distinct().count() != adminPhones.size()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_HAS_DUPLICATE_ADMIN_PHONES);
+        }
+    }
+
+    public void setUpCompanyTrackRecordCredibility(String companyId,CompanyTrackRecordCredibilityCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        verifyCompanyTrackRecordCredibilityRequest(request);
+        CompanyTrackRecordCredibility companyTrackRecordCredibility = buildCompanyTrackRecordCredibility(request);
+        company.setCompanyTrackRecordCredibility(companyTrackRecordCredibility);
+        company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.TRACK_RECORDS_AND_CREDIBILITY));
+        companyRepository.save(company);
+    }
+
+    private void verifyCompanyTrackRecordCredibilityRequest(CompanyTrackRecordCredibilityCreateRequest request) {    
+        if(request.getMajorProjectsDeliveredSocialMediaLinks() == null || request.getMajorProjectsDeliveredSocialMediaLinks().isEmpty()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_TRACK_RECORD_CREDIBILITY_MAJOR_PROJECTS_DELIVERED_SOCIAL_MEDIA_LINKS_IS_REQUIRED);
+        }
+       
+    }
+
+    private CompanyTrackRecordCredibility buildCompanyTrackRecordCredibility(CompanyTrackRecordCredibilityCreateRequest request) {
+        return CompanyTrackRecordCredibility.builder()
+                .trackRecordCredibilityType(request.getTrackRecordCredibilityType())
+                .numberOfMajorProjectsDelivered(request.getNumberOfMajorProjectsDelivered())
+                .yearsOfExperience(request.getYearsOfExperience())
+                .majorProjectsDeliveredSocialMediaLinks(request.getMajorProjectsDeliveredSocialMediaLinks())
+                .averageProjectExcutedAmount(request.getAverageProjectExcutedAmount())
+                .majorSponsorPartnerNames(request.getMajorSponsorPartnerNames())
+                .build();
+    }
+
+    public void setUpCompanyComplianceAndIdentity(String companyId,DocumentEntityValueCreateRequestSetUp request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        company.setTaxIdentificationDocument(buildDocumentEntityValue(request.getTaxIdentificationDocumentCreateRequest()));
+        company.setProofOfAddressDocument(buildDocumentEntityValue(request.getProofOfAddressDocumentCreateRequest()));
+        company.setGovernmentIdDocument(buildDocumentEntityValue(request.getGovernmentIdDocumentCreateRequest()));
+        company.setComplianceAndIdentityDocument(buildDocumentEntityValue(request.getComplianceAndIdentityDocumentCreateRequest()));
+        company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.COMPLIANCE_AND_IDENTITY));
+        companyRepository.save(company);
+    }
+
+    private DocumentEntityValue buildDocumentEntityValue(DocumentEntityValueCreateRequest request) {
+        return DocumentEntityValue.builder()
+                .documentEntityValueType(request.getDocumentEntityValueType())
+                .documentEntityValueUrl(request.getDocumentEntityValueUrl())
+                .submittedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public void setUpCompanyDeclarationConsent(String companyId,CompanyDeclarationConsentCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        company.setCompanyDeclarationConsent(buildCompanyDeclarationConsent(request));
+        company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.DECLARATION_AND_CONSENT));
+        companyRepository.save(company);
+    }
+    
+    private CompanyDeclarationConsent buildCompanyDeclarationConsent(CompanyDeclarationConsentCreateRequest request) {
+        return CompanyDeclarationConsent.builder()
+                .agreedToCrawdwallTermsAndConditions(request.isAgreedToCrawdwallTermsAndConditions())
+                .confirmedAllSubmittedInformationAreCorrect(request.isConfirmedAllSubmittedInformationAreCorrect())
+                .authorizedCrawdwallToPerformBackgroundChecks(request.isAuthorizedCrawdwallToPerformBackgroundChecks())
+                .declarationConsentSignatureUrl(request.getDeclarationConsentSignatureUrl())
+                .declarationConsentSignedAt(LocalDateTime.now())
+                .build();
+    }
+
+
+    CompanyAuthResponse authenticateCompany(UserAuthRequest request) {
+        UserResponse userResponse = userService.authenticateUser(request, UserType.COMPANY);
+        if (!userResponse.isVerified() && !userResponse.isActive()){
+            return CompanyAuthResponse.builder().userResponse(userResponse).build();
+        }
+        Company company = companyRepository.findByUserId(userResponse.userId())
+                .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_USER_NOT_FOUND));
+        if (company.getStatus() != Status.ACTIVE) {
+            throw new UnauthorizedException(ApiResponseMessages.ERROR_COMPANY_APP_ACCESS_DISABLED);
+        }
+        return CompanyAuthResponse.builder()
+                .token(generateJwtForCompany(company, userResponse))
+                .companyId(company.getId()).userId(userResponse.userId())
+                .refreshToken(generateRefreshToken(company, userResponse))
+                .kycCompleted(company.isKycCompleted())
+                .documentVerified(company.isDocumentVerified())
+                .userResponse(userResponse).build();
+
+    }
+
+     /**
+         * Generates a refresh JWT token for a company.
+         *
+         * @param company       company entity
+         * @param userResponse  user information
+         * @return signed refresh token
+         */
+     private String generateRefreshToken(Company company, UserResponse userResponse) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("companyId", company.getId());
+        extraClaims.put("userId", userResponse.userId());
+        extraClaims.put("email", userResponse.emailAddress());
+        extraClaims.put("userType", userResponse.userType());
+        return jwtService.generateRefreshToken(userResponse.emailAddress(), extraClaims);
+    }
+
+    /**
+     * Generates an authentication JWT token for a company.
+     *
+     * @param company      company entity
+     * @param userResponse user details
+     * @return JWT token
+     */
+    private String generateJwtForCompany(Company company, UserResponse userResponse) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("companyId", company.getId());
+        extraClaims.put("userId", userResponse.userId());
+        extraClaims.put("email", userResponse.emailAddress());
+        extraClaims.put("userType", userResponse.userType());
+        return jwtService.generateToken(extraClaims, userResponse.emailAddress());
+    }
+
+
 
 
 }

@@ -33,4 +33,11 @@ public interface ApiResponseMessages {
     String ERROR_COMPANY_REGISTRATION_NUMBER_ALREADY_EXISTS = "Company registration number already exists.";
     String ERROR_COMPANY_NOT_FOUND = "Company not found.";
     String ERROR_TERMS_AND_CONDITION_ERROR = "You must accept the terms and conditions to proceed";
+    String ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_DOES_NOT_HAVE_MAIN_FOUNDER = "Company leader and ownership setup has main admin.";
+    String ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_HAS_MULTIPLE_MAIN_FOUNDERS = "Company leader and ownership setup has multiple main founders. Only one main founder is allowed.";
+    String ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_HAS_DUPLICATE_ADMIN_EMAILS = "Company leader and ownership setup has duplicate admin emails. Each admin email must be unique.";
+    String ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_HAS_DUPLICATE_ADMIN_PHONES = "Company leader and ownership setup has duplicate admin phones. Each admin phone must be unique.";
+    String ERROR_COMPANY_LEADER_SHIP_OWNERSHIP_REQUEST_IS_EMPTY = "At least one admin is required to setup company leader and ownership.";
+    String ERROR_COMPANY_TRACK_RECORD_CREDIBILITY_MAJOR_PROJECTS_DELIVERED_SOCIAL_MEDIA_LINKS_IS_REQUIRED = "At least one major project delivered social media link is required to setup company track record credibility.";
+    String ERROR_COMPANY_APP_ACCESS_DISABLED = "Company app access is disabled. Please contact support for assistance.";
 }
