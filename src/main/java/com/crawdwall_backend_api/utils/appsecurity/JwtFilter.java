@@ -77,7 +77,7 @@ public class JwtFilter extends OncePerRequestFilter {
        log.info("Checking route access for userType={} uri={}", userType, req.getRequestURI());
         boolean allowed = switch (userType) {
             case "ADMIN"   -> routeValidator.isAdminEndpoint(req);
-            case "APP_USER" -> routeValidator.isAppUserEndpoint(req);
+            case "COMPANY" -> routeValidator.isCompanyEndpoint(req);
 
             case "SUPER_ADMIN" -> routeValidator.isSuperAdminEndpoint(req);
             default        -> false;
