@@ -53,4 +53,15 @@ private   LocalDateTime kycCompletedAt;
 private   LocalDateTime documentVerifiedAt;
 private   LocalDateTime kycStartedAt;
 private   LocalDateTime documentStartedAt;
+
+// KYC Level 2 fields
+private   Set<CompanyKycTwoStep> companyKycTwoSteps;
+private   Set<CompanyBankingAndFinancialAccounts> companyBankingAndFinancialAccounts;
+private   Set<CompanyAuthorizedSignatoriesAndControl> companyAuthorizedSignatoriesAndControl;
+private   CompanyFinancialIntegrityAndRiskControl companyFinancialIntegrityAndRiskControl;
+private   CompanyExecutionAndReportingReadiness companyExecutionAndReportingReadiness;
+private   CompanyCapitalGovernanceAgreement companyCapitalGovernanceAgreement;
+private   boolean isKycTwoCompleted;
+private   LocalDateTime kycTwoCompletedAt;
+private   LocalDateTime kycTwoStartedAt;
     }

@@ -55,6 +55,12 @@ import com.crawdwall_backend_api.utils.exception.UnauthorizedException;
 import com.crawdwall_backend_api.utils.appsecurity.JwtService;
 import java.util.Map;
 import java.util.HashMap;
+import com.crawdwall_backend_api.company.request.CompanyBankingAndFinancialAccountsRequest;
+import com.crawdwall_backend_api.company.request.CompanyAuthorizedSignatoriesAndControlCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanySignatoryRequest;
+import com.crawdwall_backend_api.company.request.CompanyFinancialIntegrityAndRiskControlCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyExecutionAndReportingReadinessCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyCapitalGovernanceAgreementCreateRequest;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -469,6 +475,13 @@ public class CompanyService {
                 .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
         company.setCompanyDeclarationConsent(buildCompanyDeclarationConsent(request));
         company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.DECLARATION_AND_CONSENT));
+        
+        // Check if all KYC Level 1 steps are completed (there are 6 steps)
+        if (company.getCompanyKycOneSteps() != null && company.getCompanyKycOneSteps().size() == 6) {
+            company.setKycCompleted(true);
+            company.setKycCompletedAt(LocalDateTime.now());
+        }
+        
         companyRepository.save(company);
     }
     
@@ -541,7 +554,518 @@ public class CompanyService {
         return jwtService.generateToken(extraClaims, userResponse.emailAddress());
     }
 
+    // ==================== KYC LEVEL 2 METHODS ====================
 
+    /**
+     * Sets up banking and financial accounts for KYC Level 2.
+     *
+     * @param companyId the company ID
+     * @param request   the banking accounts request
+     */
+    public void setUpBankingAndFinancialAccounts(String companyId, CompanyBankingAndFinancialAccountsRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        // Validate that KYC Level 1 is completed
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        // Validate the banking accounts request
+        verifyBankingAccountsRequest(request);
+        
+        // Build banking accounts set
+        Set<CompanyBankingAndFinancialAccounts> bankingAccounts = buildBankingAccounts(request);
+        
+        // Update company with banking accounts
+        company.setCompanyBankingAndFinancialAccounts(bankingAccounts);
+        company.setCompanyKycTwoSteps(setUpCompanyKycTwoStep(company, CompanyKycTwoStep.BANKING_AND_FINANCIAL_ACCOUNTS));
+        
+        // Set KYC2 started timestamp if not already set
+        if (company.getKycTwoStartedAt() == null) {
+            company.setKycTwoStartedAt(LocalDateTime.now());
+        }
+        
+        companyRepository.save(company);
+    }
+
+    /**
+     * Builds a set of banking accounts from the request.
+     *
+     * @param request the banking accounts request
+     * @return set of CompanyBankingAndFinancialAccounts
+     */
+    private Set<CompanyBankingAndFinancialAccounts> buildBankingAccounts(CompanyBankingAndFinancialAccountsRequest request) {
+        Set<CompanyBankingAndFinancialAccounts> accounts = new HashSet<>();
+        
+        CompanyBankingAndFinancialAccounts account = CompanyBankingAndFinancialAccounts.builder()
+                .bankName(request.bankName())
+                .accountName(request.accountName())
+                .accountNumber(request.accountNumber())
+                .accountType(request.accountType())
+                .accountCurrency(request.accountCurrency())
+                .letterOfStatementUrl(request.letterOfStatementUrl())
+                .build();
+        
+        accounts.add(account);
+        return accounts;
+    }
+
+    /**
+     * Validates the banking accounts request.
+     *
+     * @param request the banking accounts request
+     */
+    private void verifyBankingAccountsRequest(CompanyBankingAndFinancialAccountsRequest request) {
+        if (request.bankName() == null || request.bankName().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_BANK_NAME_REQUIRED);
+        }
+        if (request.accountName() == null || request.accountName().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_ACCOUNT_NAME_REQUIRED);
+        }
+        if (request.accountNumber() == null || request.accountNumber().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_ACCOUNT_NUMBER_REQUIRED);
+        }
+        if (request.accountType() == null) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_ACCOUNT_TYPE_REQUIRED);
+        }
+        if (request.accountCurrency() == null) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_ACCOUNT_CURRENCY_REQUIRED);
+        }
+    }
+
+    /**
+     * Adds a KYC Level 2 step to the company's completed steps.
+     *
+     * @param company        the company entity
+     * @param kycTwoStep     the KYC2 step to add
+     * @return updated set of KYC2 steps
+     */
+    private Set<CompanyKycTwoStep> setUpCompanyKycTwoStep(Company company, CompanyKycTwoStep kycTwoStep) {
+        Set<CompanyKycTwoStep> kycTwoSteps = company.getCompanyKycTwoSteps();
+        if (kycTwoSteps == null) {
+            kycTwoSteps = new HashSet<>();
+        }
+        kycTwoSteps.add(kycTwoStep);
+        return kycTwoSteps;
+    }
+
+    /**
+     * Sets up authorized signatories and control for KYC Level 2.
+     *
+     * @param companyId the company ID
+     * @param request   the authorized signatories request
+     */
+    public void setUpAuthorizedSignatoriesAndControl(String companyId, CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        // Validate that KYC Level 1 is completed
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        // Validate the authorized signatories request
+        verifyAuthorizedSignatoriesRequest(request);
+        
+        // Build authorized signatories set
+        Set<CompanyAuthorizedSignatoriesAndControl> authorizedSignatories = buildAuthorizedSignatories(request);
+        
+        // Update company with authorized signatories
+        company.setCompanyAuthorizedSignatoriesAndControl(authorizedSignatories);
+        company.setCompanyKycTwoSteps(setUpCompanyKycTwoStep(company, CompanyKycTwoStep.AUTHORIZED_SIGNATORIES_AND_CONTROL));
+        
+        // Set KYC2 started timestamp if not already set
+        if (company.getKycTwoStartedAt() == null) {
+            company.setKycTwoStartedAt(LocalDateTime.now());
+        }
+        
+        companyRepository.save(company);
+    }
+
+    /**
+     * Builds a set of authorized signatories from the request.
+     *
+     * @param request the authorized signatories request
+     * @return set of CompanyAuthorizedSignatoriesAndControl
+     */
+    private Set<CompanyAuthorizedSignatoriesAndControl> buildAuthorizedSignatories(CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
+        Set<CompanyAuthorizedSignatoriesAndControl> signatories = new HashSet<>();
+        
+        // Add primary signatory
+        CompanyAuthorizedSignatoriesAndControl primarySignatory = CompanyAuthorizedSignatoriesAndControl.builder()
+                .signatoryName(request.primarySignatory().signatoryName())
+                .role(request.primarySignatory().role())
+                .email(request.primarySignatory().email())
+                .phoneNumber(request.primarySignatory().phoneNumber())
+                .isPrimary(true)
+                .governmentIdDocumentUrl(request.governmentIdDocumentUrl())
+                .authorizationLetterUrl(request.authorizationLetterUrl())
+                .build();
+        
+        signatories.add(primarySignatory);
+        
+        // Add secondary signatories if present
+        if (request.secondarySignatories() != null && !request.secondarySignatories().isEmpty()) {
+            for (CompanySignatoryRequest secondaryReq : request.secondarySignatories()) {
+                CompanyAuthorizedSignatoriesAndControl secondarySignatory = CompanyAuthorizedSignatoriesAndControl.builder()
+                        .signatoryName(secondaryReq.signatoryName())
+                        .role(secondaryReq.role())
+                        .email(secondaryReq.email())
+                        .phoneNumber(secondaryReq.phoneNumber())
+                        .isPrimary(false)
+                        .build();
+                signatories.add(secondarySignatory);
+            }
+        }
+        
+        return signatories;
+    }
+
+    /**
+     * Validates the authorized signatories request.
+     *
+     * @param request the authorized signatories request
+     */
+    private void verifyAuthorizedSignatoriesRequest(CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
+        // Validate primary signatory
+        if (request.primarySignatory() == null) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_PRIMARY_SIGNATORY_NAME_REQUIRED);
+        }
+        
+        CompanySignatoryRequest primary = request.primarySignatory();
+        if (primary.signatoryName() == null || primary.signatoryName().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_PRIMARY_SIGNATORY_NAME_REQUIRED);
+        }
+        if (primary.role() == null || primary.role().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_ROLE_REQUIRED);
+        }
+        if (primary.email() == null || primary.email().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_EMAIL_REQUIRED);
+        }
+        if (primary.phoneNumber() == null || primary.phoneNumber().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_PHONE_REQUIRED);
+        }
+        
+        // Validate secondary signatories if present (optional)
+        if (request.secondarySignatories() != null && !request.secondarySignatories().isEmpty()) {
+            for (CompanySignatoryRequest secondary : request.secondarySignatories()) {
+                if (secondary.signatoryName() == null || secondary.signatoryName().isBlank()) {
+                    throw new InvalidInputException(ApiResponseMessages.ERROR_PRIMARY_SIGNATORY_NAME_REQUIRED);
+                }
+                if (secondary.role() == null || secondary.role().isBlank()) {
+                    throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_ROLE_REQUIRED);
+                }
+                if (secondary.email() == null || secondary.email().isBlank()) {
+                    throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_EMAIL_REQUIRED);
+                }
+                if (secondary.phoneNumber() == null || secondary.phoneNumber().isBlank()) {
+                    throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_PHONE_REQUIRED);
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets up financial integrity and risk controls for KYC Level 2.
+     *
+     * @param companyId the company ID
+     * @param request   the financial integrity request
+     */
+    public void setUpFinancialIntegrityAndRiskControl(String companyId, CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        // Validate that KYC Level 1 is completed
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        // Validate the financial integrity request
+        verifyFinancialIntegrityRequest(request);
+        
+        // Build financial integrity object
+        CompanyFinancialIntegrityAndRiskControl financialIntegrity = buildFinancialIntegrity(request);
+        
+        // Update company with financial integrity
+        company.setCompanyFinancialIntegrityAndRiskControl(financialIntegrity);
+        company.setCompanyKycTwoSteps(setUpCompanyKycTwoStep(company, CompanyKycTwoStep.FINANCIAL_INTEGRITY_AND_RISK_CONTROLS));
+        
+        // Set KYC2 started timestamp if not already set
+        if (company.getKycTwoStartedAt() == null) {
+            company.setKycTwoStartedAt(LocalDateTime.now());
+        }
+        
+        companyRepository.save(company);
+    }
+
+    /**
+     * Builds financial integrity object from the request.
+     *
+     * @param request the financial integrity request
+     * @return CompanyFinancialIntegrityAndRiskControl
+     */
+    private CompanyFinancialIntegrityAndRiskControl buildFinancialIntegrity(CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
+        return CompanyFinancialIntegrityAndRiskControl.builder()
+                .primaryRevenueSources(request.primaryRevenueSources())
+                .expectedTransactionVolume(request.expectedTransactionVolume())
+                .sourceOfFundsDeclaration(request.sourceOfFundsDeclaration())
+                .isPoliticallyExposedPerson(request.isPoliticallyExposedPerson())
+                .pepRole(request.pepRole())
+                .pepCountry(request.pepCountry())
+                .pepYear(request.pepYear())
+                .hasLitigationBankruptcyOrInsolvency(request.hasLitigationBankruptcyOrInsolvency())
+                .litigationNature(request.litigationNature())
+                .litigationYear(request.litigationYear())
+                .litigationCurrentStatus(request.litigationCurrentStatus())
+                .isSubjectToSanctions(request.isSubjectToSanctions())
+                .sanctionsPartyAffected(request.sanctionsPartyAffected())
+                .sanctionsNature(request.sanctionsNature())
+                .sanctionsCurrentStatus(request.sanctionsCurrentStatus())
+                .build();
+    }
+
+    /**
+     * Validates the financial integrity request.
+     *
+     * @param request the financial integrity request
+     */
+    private void verifyFinancialIntegrityRequest(CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
+        // Validate required fields
+        if (request.primaryRevenueSources() == null || request.primaryRevenueSources().isEmpty()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_PRIMARY_REVENUE_SOURCES_REQUIRED);
+        }
+        if (request.expectedTransactionVolume() == null) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_EXPECTED_TRANSACTION_VOLUME_REQUIRED);
+        }
+        if (request.sourceOfFundsDeclaration() == null || request.sourceOfFundsDeclaration().isEmpty()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_SOURCE_OF_FUNDS_DECLARATION_REQUIRED);
+        }
+        
+        // Validate PEP conditional fields
+        if (request.isPoliticallyExposedPerson()) {
+            if (request.pepRole() == null || request.pepRole().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_PEP_ROLE_REQUIRED);
+            }
+            if (request.pepCountry() == null || request.pepCountry().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_PEP_COUNTRY_REQUIRED);
+            }
+            if (request.pepYear() == null) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_PEP_YEAR_REQUIRED);
+            }
+        }
+        
+        // Validate litigation conditional fields
+        if (request.hasLitigationBankruptcyOrInsolvency()) {
+            if (request.litigationNature() == null || request.litigationNature().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_LITIGATION_NATURE_REQUIRED);
+            }
+            if (request.litigationYear() == null) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_LITIGATION_YEAR_REQUIRED);
+            }
+            if (request.litigationCurrentStatus() == null || request.litigationCurrentStatus().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_LITIGATION_STATUS_REQUIRED);
+            }
+        }
+        
+        // Validate sanctions conditional fields
+        if (request.isSubjectToSanctions()) {
+            if (request.sanctionsPartyAffected() == null || request.sanctionsPartyAffected().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_SANCTIONS_PARTY_REQUIRED);
+            }
+            if (request.sanctionsNature() == null || request.sanctionsNature().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_SANCTIONS_NATURE_REQUIRED);
+            }
+            if (request.sanctionsCurrentStatus() == null || request.sanctionsCurrentStatus().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_SANCTIONS_STATUS_REQUIRED);
+            }
+        }
+    }
+
+
+    /**
+     * Sets up execution and reporting readiness for KYC Level 2.
+     *
+     * @param companyId the company ID
+     * @param request   the execution and reporting readiness request
+     */
+    public void setUpExecutionAndReportingReadiness(String companyId, CompanyExecutionAndReportingReadinessCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        // Validate that KYC Level 1 is completed
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        // Validate the execution and reporting readiness request
+        verifyExecutionAndReportingReadinessRequest(request);
+        
+        // Build execution and reporting readiness object
+        CompanyExecutionAndReportingReadiness executionReadiness = buildExecutionAndReportingReadiness(request);
+        
+        // Update company with execution and reporting readiness
+        company.setCompanyExecutionAndReportingReadiness(executionReadiness);
+        company.setCompanyKycTwoSteps(setUpCompanyKycTwoStep(company, CompanyKycTwoStep.EXECUTION_AND_REPORTING_READINESS));
+        
+        // Set KYC2 started timestamp if not already set
+        if (company.getKycTwoStartedAt() == null) {
+            company.setKycTwoStartedAt(LocalDateTime.now());
+        }
+        
+        companyRepository.save(company);
+    }
+
+    /**
+     * Builds execution and reporting readiness object from the request.
+     *
+     * @param request the execution and reporting readiness request
+     * @return CompanyExecutionAndReportingReadiness
+     */
+    private CompanyExecutionAndReportingReadiness buildExecutionAndReportingReadiness(CompanyExecutionAndReportingReadinessCreateRequest request) {
+        return CompanyExecutionAndReportingReadiness.builder()
+                .fullName(request.fullName())
+                .role(request.role())
+                .email(request.email())
+                .phoneNumber(request.phoneNumber())
+                .accountingSystemUsed(request.accountingSystemUsed())
+                .financialReportingFrequency(request.financialReportingFrequency())
+                .hasPastEscrowUse(request.hasPastEscrowUse())
+                .typeOfArrangement(request.typeOfArrangement())
+                .purposeOfEscrow(request.purposeOfEscrow())
+                .counterpartyPlatformUsed(request.counterpartyPlatformUsed())
+                .durationOfAgreement(request.durationOfAgreement())
+                .build();
+    }
+
+    /**
+     * Validates the execution and reporting readiness request.
+     *
+     * @param request the execution and reporting readiness request
+     */
+    private void verifyExecutionAndReportingReadinessRequest(CompanyExecutionAndReportingReadinessCreateRequest request) {
+        // Validate required fields
+        if (request.fullName() == null || request.fullName().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_FINANCE_LEAD_FULL_NAME_REQUIRED);
+        }
+        if (request.role() == null || request.role().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_FINANCE_LEAD_ROLE_REQUIRED);
+        }
+        if (request.email() == null || request.email().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_FINANCE_LEAD_EMAIL_REQUIRED);
+        }
+        if (request.phoneNumber() == null || request.phoneNumber().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_FINANCE_LEAD_PHONE_REQUIRED);
+        }
+        if (request.accountingSystemUsed() == null) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_ACCOUNTING_SYSTEM_REQUIRED);
+        }
+        if (request.financialReportingFrequency() == null) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_FINANCIAL_REPORTING_FREQUENCY_REQUIRED);
+        }
+        
+        // Validate conditional fields if past escrow use is true
+        if (request.hasPastEscrowUse()) {
+            if (request.typeOfArrangement() == null || request.typeOfArrangement().isEmpty()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_TYPE_OF_ARRANGEMENT_REQUIRED);
+            }
+            if (request.purposeOfEscrow() == null || request.purposeOfEscrow().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_PURPOSE_OF_ESCROW_REQUIRED);
+            }
+            if (request.counterpartyPlatformUsed() == null || request.counterpartyPlatformUsed().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_COUNTERPARTY_PLATFORM_REQUIRED);
+            }
+            if (request.durationOfAgreement() == null) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_DURATION_OF_AGREEMENT_REQUIRED);
+            }
+        }
+    }
+
+
+    /**
+     * Sets up capital governance agreement for KYC Level 2 (Final Step).
+     *
+     * @param companyId the company ID
+     * @param request   the capital governance agreement request
+     */
+    public void setUpCapitalGovernanceAgreement(String companyId, CompanyCapitalGovernanceAgreementCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        // Validate that KYC Level 1 is completed
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        // Validate the capital governance agreement request
+        verifyCapitalGovernanceAgreementRequest(request);
+        
+        // Build capital governance agreement object
+        CompanyCapitalGovernanceAgreement capitalGovernance = buildCapitalGovernanceAgreement(request);
+        
+        // Update company with capital governance agreement
+        company.setCompanyCapitalGovernanceAgreement(capitalGovernance);
+        company.setCompanyKycTwoSteps(setUpCompanyKycTwoStep(company, CompanyKycTwoStep.CAPITAL_GOVERNANCE_AGREEMENT));
+        
+        // Set KYC2 started timestamp if not already set
+        if (company.getKycTwoStartedAt() == null) {
+            company.setKycTwoStartedAt(LocalDateTime.now());
+        }
+        
+        // Check if all KYC2 steps are completed
+        if (company.getCompanyKycTwoSteps() != null && company.getCompanyKycTwoSteps().size() == 5) {
+            company.setKycTwoCompleted(true);
+            company.setKycTwoCompletedAt(LocalDateTime.now());
+        }
+        
+        companyRepository.save(company);
+    }
+
+    /**
+     * Builds capital governance agreement object from the request.
+     *
+     * @param request the capital governance agreement request
+     * @return CompanyCapitalGovernanceAgreement
+     */
+    private CompanyCapitalGovernanceAgreement buildCapitalGovernanceAgreement(CompanyCapitalGovernanceAgreementCreateRequest request) {
+        return CompanyCapitalGovernanceAgreement.builder()
+                .consentToMilestoneBasedDisbursement(request.consentToMilestoneBasedDisbursement())
+                .consentToEscrowOrControlledAccount(request.consentToEscrowOrControlledAccount())
+                .consentToThirdPartyMonitoring(request.consentToThirdPartyMonitoring())
+                .understandSuspensionPolicy(request.understandSuspensionPolicy())
+                .digitalSignatureUrl(request.digitalSignatureUrl())
+                .agreementDate(request.agreementDate())
+                .build();
+    }
+
+    /**
+     * Validates the capital governance agreement request.
+     *
+     * @param request the capital governance agreement request
+     */
+    private void verifyCapitalGovernanceAgreementRequest(CompanyCapitalGovernanceAgreementCreateRequest request) {
+        // All consents must be true
+        if (!request.consentToMilestoneBasedDisbursement()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_CONSENT_MILESTONE_DISBURSEMENT_REQUIRED);
+        }
+        if (!request.consentToEscrowOrControlledAccount()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_CONSENT_ESCROW_ACCOUNT_REQUIRED);
+        }
+        if (!request.consentToThirdPartyMonitoring()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_CONSENT_THIRD_PARTY_MONITORING_REQUIRED);
+        }
+        if (!request.understandSuspensionPolicy()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_UNDERSTAND_SUSPENSION_POLICY_REQUIRED);
+        }
+        
+        // Digital signature and date are required
+        if (request.digitalSignatureUrl() == null || request.digitalSignatureUrl().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_DIGITAL_SIGNATURE_REQUIRED);
+        }
+        if (request.agreementDate() == null) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_AGREEMENT_DATE_REQUIRED);
+        }
+    }
 
 
 }
