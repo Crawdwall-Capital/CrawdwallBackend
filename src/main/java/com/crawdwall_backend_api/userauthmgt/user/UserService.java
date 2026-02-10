@@ -353,7 +353,7 @@ public class UserService {
 //            emailSenderService.sendAdminPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName() + " " + user.getLastName());
         }
         if(user.getUserType() == UserType.COMPANY){
-//            emailSenderService.sendCompanyPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName());
+            emailSenderService.sendCompanyPasswordResetEmail(user.getEmailAddress(),  otp.get("otp"), user.getFirstName());
         }
 	}
 

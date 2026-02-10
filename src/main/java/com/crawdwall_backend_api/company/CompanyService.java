@@ -94,14 +94,13 @@ public class CompanyService {
          
         // Create user account for the company
         UserCreateResponse userCreateResponse = userService.createUser(UserCreateRequest.builder()
-                .firstName(request.companyName()) // Use company name as first name
-                .lastName("Company") // Default last name
+                .firstName(request.companyName())
                 .emailAddress(request.companyEmail())
                 .password(request.password())
                 .userType(UserType.COMPANY)
                 .build());
     
-        // Create company entity with minimal required data
+
         Company company = buildCompany(request, userCreateResponse.userId());
         companyRepository.save(company);
     }
