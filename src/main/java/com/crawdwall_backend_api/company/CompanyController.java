@@ -26,7 +26,11 @@ import com.crawdwall_backend_api.company.request.DocumentEntityValueCreateReques
 import com.crawdwall_backend_api.company.request.CompanyDeclarationConsentCreateRequest;
 import com.crawdwall_backend_api.company.response.CompanyAuthResponse;
 import com.crawdwall_backend_api.userauthmgt.user.request.UserAuthRequest;
-import com.crawdwall_backend_api.company.response.CompanyAuthResponse;
+import com.crawdwall_backend_api.company.request.CompanyBankingAndFinancialAccountsRequest;
+import com.crawdwall_backend_api.company.request.CompanyAuthorizedSignatoriesAndControlCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyFinancialIntegrityAndRiskControlCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyExecutionAndReportingReadinessCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyCapitalGovernanceAgreementCreateRequest;
 
 
 @RestController
@@ -197,6 +201,59 @@ public class CompanyController {
                 .build());
     }
 
+    @PostMapping("/private/setup-banking/{companyId}")
+    public ResponseEntity<ApiResponse> setUpBankingAndFinancialAccounts(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyBankingAndFinancialAccountsRequest request) {
+        companyService.setUpBankingAndFinancialAccounts(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Banking and financial accounts setup successfully")
+                .build());
+    }
 
+    @PostMapping("/private/setup-signatories/{companyId}")
+    public ResponseEntity<ApiResponse> setUpAuthorizedSignatoriesAndControl(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
+        companyService.setUpAuthorizedSignatoriesAndControl(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Authorized signatories and control setup successfully")
+                .build());
+    }
+
+    @PostMapping("/private/setup-financial-integrity/{companyId}")
+    public ResponseEntity<ApiResponse> setUpFinancialIntegrityAndRiskControl(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
+        companyService.setUpFinancialIntegrityAndRiskControl(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Financial integrity and risk controls setup successfully")
+                .build());
+    }
+
+    @PostMapping("/private/setup-execution-readiness/{companyId}")
+    public ResponseEntity<ApiResponse> setUpExecutionAndReportingReadiness(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyExecutionAndReportingReadinessCreateRequest request) {
+        companyService.setUpExecutionAndReportingReadiness(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Execution and reporting readiness setup successfully")
+                .build());
+    }
+
+    @PostMapping("/private/setup-capital-governance/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCapitalGovernanceAgreement(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyCapitalGovernanceAgreementCreateRequest request) {
+        companyService.setUpCapitalGovernanceAgreement(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Capital governance agreement setup successfully")
+                .build());
+    }
 
 }

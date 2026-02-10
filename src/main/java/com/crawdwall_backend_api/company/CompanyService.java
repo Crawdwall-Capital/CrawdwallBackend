@@ -55,6 +55,12 @@ import com.crawdwall_backend_api.utils.exception.UnauthorizedException;
 import com.crawdwall_backend_api.utils.appsecurity.JwtService;
 import java.util.Map;
 import java.util.HashMap;
+import com.crawdwall_backend_api.company.request.CompanyBankingAndFinancialAccountsRequest;
+import com.crawdwall_backend_api.company.request.CompanyAuthorizedSignatoriesAndControlCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanySignatoryRequest;
+import com.crawdwall_backend_api.company.request.CompanyFinancialIntegrityAndRiskControlCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyExecutionAndReportingReadinessCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyCapitalGovernanceAgreementCreateRequest;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -469,6 +475,13 @@ public class CompanyService {
                 .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
         company.setCompanyDeclarationConsent(buildCompanyDeclarationConsent(request));
         company.setCompanyKycOneSteps(setUpCompanyKycOneStep(company,CompanyKycOneStep.DECLARATION_AND_CONSENT));
+        
+        // Check if all KYC Level 1 steps are completed (there are 6 steps)
+        if (company.getCompanyKycOneSteps() != null && company.getCompanyKycOneSteps().size() == 6) {
+            company.setKycCompleted(true);
+            company.setKycCompletedAt(LocalDateTime.now());
+        }
+        
         companyRepository.save(company);
     }
     
@@ -541,7 +554,316 @@ public class CompanyService {
         return jwtService.generateToken(extraClaims, userResponse.emailAddress());
     }
 
+    public void setUpBankingAndFinancialAccounts(String companyId, CompanyBankingAndFinancialAccountsRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        Set<CompanyBankingAndFinancialAccounts> bankingAccounts = buildBankingAccounts(request);
+        
+        company.setCompanyBankingAndFinancialAccounts(bankingAccounts);
+        updateKycTwoProgress(company, CompanyKycTwoStep.BANKING_AND_FINANCIAL_ACCOUNTS);
+        
+        companyRepository.save(company);
+    }
 
+    private Set<CompanyBankingAndFinancialAccounts> buildBankingAccounts(CompanyBankingAndFinancialAccountsRequest request) {
+        Set<CompanyBankingAndFinancialAccounts> accounts = new HashSet<>();
+        
+        CompanyBankingAndFinancialAccounts account = CompanyBankingAndFinancialAccounts.builder()
+                .bankName(request.bankName())
+                .accountName(request.accountName())
+                .accountNumber(request.accountNumber())
+                .accountType(request.accountType())
+                .accountCurrency(request.accountCurrency())
+                .letterOfStatementUrl(request.letterOfStatementUrl())
+                .build();
+        
+        accounts.add(account);
+        return accounts;
+    }
+
+    private void updateKycTwoProgress(Company company, CompanyKycTwoStep step) {
+        Set<CompanyKycTwoStep> steps = company.getCompanyKycTwoSteps();
+        if (steps == null) {
+            steps = new HashSet<>();
+        }
+        steps.add(step);
+        company.setCompanyKycTwoSteps(steps);
+        
+        if (company.getKycTwoStartedAt() == null) {
+            company.setKycTwoStartedAt(LocalDateTime.now());
+        }
+    }
+
+    public void setUpAuthorizedSignatoriesAndControl(String companyId, CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        verifyAuthorizedSignatoriesRequest(request);
+        
+        Set<CompanyAuthorizedSignatoriesAndControl> authorizedSignatories = buildAuthorizedSignatories(request);
+        
+        company.setCompanyAuthorizedSignatoriesAndControl(authorizedSignatories);
+        updateKycTwoProgress(company, CompanyKycTwoStep.AUTHORIZED_SIGNATORIES_AND_CONTROL);
+        
+        companyRepository.save(company);
+    }
+
+    private Set<CompanyAuthorizedSignatoriesAndControl> buildAuthorizedSignatories(CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
+        Set<CompanyAuthorizedSignatoriesAndControl> signatories = new HashSet<>();
+        
+        CompanyAuthorizedSignatoriesAndControl primarySignatory = CompanyAuthorizedSignatoriesAndControl.builder()
+                .signatoryName(request.primarySignatory().signatoryName())
+                .role(request.primarySignatory().role())
+                .email(request.primarySignatory().email())
+                .phoneNumber(request.primarySignatory().phoneNumber())
+                .isPrimary(true)
+                .governmentIdDocumentUrl(request.governmentIdDocumentUrl())
+                .authorizationLetterUrl(request.authorizationLetterUrl())
+                .build();
+        
+        signatories.add(primarySignatory);
+        
+        // Add secondary signatories if present
+        if (request.secondarySignatories() != null && !request.secondarySignatories().isEmpty()) {
+            for (CompanySignatoryRequest secondaryReq : request.secondarySignatories()) {
+                CompanyAuthorizedSignatoriesAndControl secondarySignatory = CompanyAuthorizedSignatoriesAndControl.builder()
+                        .signatoryName(secondaryReq.signatoryName())
+                        .role(secondaryReq.role())
+                        .email(secondaryReq.email())
+                        .phoneNumber(secondaryReq.phoneNumber())
+                        .isPrimary(false)
+                        .build();
+                signatories.add(secondarySignatory);
+            }
+        }
+        
+        return signatories;
+    }
+
+    private void verifyAuthorizedSignatoriesRequest(CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
+        if (request.primarySignatory() == null) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_PRIMARY_SIGNATORY_NAME_REQUIRED);
+        }
+        
+        CompanySignatoryRequest primary = request.primarySignatory();
+        if (primary.signatoryName() == null || primary.signatoryName().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_PRIMARY_SIGNATORY_NAME_REQUIRED);
+        }
+        if (primary.role() == null || primary.role().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_ROLE_REQUIRED);
+        }
+        if (primary.email() == null || primary.email().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_EMAIL_REQUIRED);
+        }
+        if (primary.phoneNumber() == null || primary.phoneNumber().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_PHONE_REQUIRED);
+        }
+        
+        if (request.secondarySignatories() != null && !request.secondarySignatories().isEmpty()) {
+            for (CompanySignatoryRequest secondary : request.secondarySignatories()) {
+                if (secondary.signatoryName() == null || secondary.signatoryName().isBlank()) {
+                    throw new InvalidInputException(ApiResponseMessages.ERROR_PRIMARY_SIGNATORY_NAME_REQUIRED);
+                }
+                if (secondary.role() == null || secondary.role().isBlank()) {
+                    throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_ROLE_REQUIRED);
+                }
+                if (secondary.email() == null || secondary.email().isBlank()) {
+                    throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_EMAIL_REQUIRED);
+                }
+                if (secondary.phoneNumber() == null || secondary.phoneNumber().isBlank()) {
+                    throw new InvalidInputException(ApiResponseMessages.ERROR_SIGNATORY_PHONE_REQUIRED);
+                }
+            }
+        }
+    }
+
+    public void setUpFinancialIntegrityAndRiskControl(String companyId, CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        verifyFinancialIntegrityRequest(request);
+        
+        CompanyFinancialIntegrityAndRiskControl financialIntegrity = buildFinancialIntegrity(request);
+        
+        company.setCompanyFinancialIntegrityAndRiskControl(financialIntegrity);
+        updateKycTwoProgress(company, CompanyKycTwoStep.FINANCIAL_INTEGRITY_AND_RISK_CONTROLS);
+        
+        companyRepository.save(company);
+    }
+
+    private CompanyFinancialIntegrityAndRiskControl buildFinancialIntegrity(CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
+        return CompanyFinancialIntegrityAndRiskControl.builder()
+                .primaryRevenueSources(request.primaryRevenueSources())
+                .expectedTransactionVolume(request.expectedTransactionVolume())
+                .sourceOfFundsDeclaration(request.sourceOfFundsDeclaration())
+                .isPoliticallyExposedPerson(request.isPoliticallyExposedPerson())
+                .pepRole(request.pepRole())
+                .pepCountry(request.pepCountry())
+                .pepYear(request.pepYear())
+                .hasLitigationBankruptcyOrInsolvency(request.hasLitigationBankruptcyOrInsolvency())
+                .litigationNature(request.litigationNature())
+                .litigationYear(request.litigationYear())
+                .litigationCurrentStatus(request.litigationCurrentStatus())
+                .isSubjectToSanctions(request.isSubjectToSanctions())
+                .sanctionsPartyAffected(request.sanctionsPartyAffected())
+                .sanctionsNature(request.sanctionsNature())
+                .sanctionsCurrentStatus(request.sanctionsCurrentStatus())
+                .build();
+    }
+
+    private void verifyFinancialIntegrityRequest(CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
+        if (request.isPoliticallyExposedPerson()) {
+            if (request.pepRole() == null || request.pepRole().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_PEP_ROLE_REQUIRED);
+            }
+            if (request.pepCountry() == null || request.pepCountry().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_PEP_COUNTRY_REQUIRED);
+            }
+            if (request.pepYear() == null) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_PEP_YEAR_REQUIRED);
+            }
+        }
+        
+        if (request.hasLitigationBankruptcyOrInsolvency()) {
+            if (request.litigationNature() == null || request.litigationNature().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_LITIGATION_NATURE_REQUIRED);
+            }
+            if (request.litigationYear() == null) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_LITIGATION_YEAR_REQUIRED);
+            }
+            if (request.litigationCurrentStatus() == null || request.litigationCurrentStatus().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_LITIGATION_STATUS_REQUIRED);
+            }
+        }
+        
+        if (request.isSubjectToSanctions()) {
+            if (request.sanctionsPartyAffected() == null || request.sanctionsPartyAffected().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_SANCTIONS_PARTY_REQUIRED);
+            }
+            if (request.sanctionsNature() == null || request.sanctionsNature().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_SANCTIONS_NATURE_REQUIRED);
+            }
+            if (request.sanctionsCurrentStatus() == null || request.sanctionsCurrentStatus().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_SANCTIONS_STATUS_REQUIRED);
+            }
+        }
+    }
+
+
+  
+    public void setUpExecutionAndReportingReadiness(String companyId, CompanyExecutionAndReportingReadinessCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        verifyExecutionAndReportingReadinessRequest(request);
+        
+        CompanyExecutionAndReportingReadiness executionReadiness = buildExecutionAndReportingReadiness(request);
+        
+        company.setCompanyExecutionAndReportingReadiness(executionReadiness);
+        updateKycTwoProgress(company, CompanyKycTwoStep.EXECUTION_AND_REPORTING_READINESS);
+        
+        companyRepository.save(company);
+    }
+
+    private CompanyExecutionAndReportingReadiness buildExecutionAndReportingReadiness(CompanyExecutionAndReportingReadinessCreateRequest request) {
+        return CompanyExecutionAndReportingReadiness.builder()
+                .fullName(request.fullName())
+                .role(request.role())
+                .email(request.email())
+                .phoneNumber(request.phoneNumber())
+                .accountingSystemUsed(request.accountingSystemUsed())
+                .financialReportingFrequency(request.financialReportingFrequency())
+                .hasPastEscrowUse(request.hasPastEscrowUse())
+                .typeOfArrangement(request.typeOfArrangement())
+                .purposeOfEscrow(request.purposeOfEscrow())
+                .counterpartyPlatformUsed(request.counterpartyPlatformUsed())
+                .durationOfAgreement(request.durationOfAgreement())
+                .build();
+    }
+
+    private void verifyExecutionAndReportingReadinessRequest(CompanyExecutionAndReportingReadinessCreateRequest request) {
+        if (request.hasPastEscrowUse()) {
+            if (request.typeOfArrangement() == null || request.typeOfArrangement().isEmpty()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_TYPE_OF_ARRANGEMENT_REQUIRED);
+            }
+            if (request.purposeOfEscrow() == null || request.purposeOfEscrow().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_PURPOSE_OF_ESCROW_REQUIRED);
+            }
+            if (request.counterpartyPlatformUsed() == null || request.counterpartyPlatformUsed().isBlank()) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_COUNTERPARTY_PLATFORM_REQUIRED);
+            }
+            if (request.durationOfAgreement() == null) {
+                throw new InvalidInputException(ApiResponseMessages.ERROR_DURATION_OF_AGREEMENT_REQUIRED);
+            }
+        }
+    }
+
+
+    public void setUpCapitalGovernanceAgreement(String companyId, CompanyCapitalGovernanceAgreementCreateRequest request) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        if (!company.isKycCompleted()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        verifyCapitalGovernanceAgreementRequest(request);
+        
+        CompanyCapitalGovernanceAgreement capitalGovernance = buildCapitalGovernanceAgreement(request);
+        
+        company.setCompanyCapitalGovernanceAgreement(capitalGovernance);
+        updateKycTwoProgress(company, CompanyKycTwoStep.CAPITAL_GOVERNANCE_AGREEMENT);
+        
+        if (company.getCompanyKycTwoSteps() != null && company.getCompanyKycTwoSteps().size() == 5) {
+            company.setKycTwoCompleted(true);
+            company.setKycTwoCompletedAt(LocalDateTime.now());
+        }
+        
+        companyRepository.save(company);
+    }
+
+    private CompanyCapitalGovernanceAgreement buildCapitalGovernanceAgreement(CompanyCapitalGovernanceAgreementCreateRequest request) {
+        return CompanyCapitalGovernanceAgreement.builder()
+                .consentToMilestoneBasedDisbursement(request.consentToMilestoneBasedDisbursement())
+                .consentToEscrowOrControlledAccount(request.consentToEscrowOrControlledAccount())
+                .consentToThirdPartyMonitoring(request.consentToThirdPartyMonitoring())
+                .understandSuspensionPolicy(request.understandSuspensionPolicy())
+                .digitalSignatureUrl(request.digitalSignatureUrl())
+                .agreementDate(request.agreementDate())
+                .build();
+    }
+
+    private void verifyCapitalGovernanceAgreementRequest(CompanyCapitalGovernanceAgreementCreateRequest request) {
+        if (!request.consentToMilestoneBasedDisbursement()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_CONSENT_MILESTONE_DISBURSEMENT_REQUIRED);
+        }
+        if (!request.consentToEscrowOrControlledAccount()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_CONSENT_ESCROW_ACCOUNT_REQUIRED);
+        }
+        if (!request.consentToThirdPartyMonitoring()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_CONSENT_THIRD_PARTY_MONITORING_REQUIRED);
+        }
+        if (!request.understandSuspensionPolicy()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_UNDERSTAND_SUSPENSION_POLICY_REQUIRED);
+        }
+    }
 
 
 }
