@@ -1,6 +1,6 @@
 package com.crawdwall_backend_api.company.request;
 
-import com.crawdwall_backend_api.company.CompanyAccountCurrency;
+import com.crawdwall_backend_api.utils.Currency;
 import com.crawdwall_backend_api.company.CompanyAccountType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -11,7 +11,7 @@ public record CompanyBankingAndFinancialAccountsRequest(
     @JsonProperty(required = true) String accountName,
     @JsonProperty(required = true) String accountNumber,
     @JsonProperty(required = true) CompanyAccountType accountType,
-    @JsonProperty(required = true) CompanyAccountCurrency accountCurrency,
+    @JsonProperty(required = true) Currency accountCurrency,
     String letterOfStatementUrl
 ) {
     

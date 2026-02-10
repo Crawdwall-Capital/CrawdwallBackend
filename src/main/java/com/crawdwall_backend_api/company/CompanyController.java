@@ -201,9 +201,7 @@ public class CompanyController {
                 .build());
     }
 
-    // ==================== KYC LEVEL 2 ENDPOINTS ====================
-
-    @PostMapping("/private/kyc2/setup-banking/{companyId}")
+    @PostMapping("/private/setup-banking/{companyId}")
     public ResponseEntity<ApiResponse> setUpBankingAndFinancialAccounts(
             @PathVariable(name = "companyId") String companyId, 
             @RequestBody CompanyBankingAndFinancialAccountsRequest request) {
@@ -214,7 +212,7 @@ public class CompanyController {
                 .build());
     }
 
-    @PostMapping("/private/kyc2/setup-signatories/{companyId}")
+    @PostMapping("/private/setup-signatories/{companyId}")
     public ResponseEntity<ApiResponse> setUpAuthorizedSignatoriesAndControl(
             @PathVariable(name = "companyId") String companyId, 
             @RequestBody CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
@@ -225,7 +223,7 @@ public class CompanyController {
                 .build());
     }
 
-    @PostMapping("/private/kyc2/setup-financial-integrity/{companyId}")
+    @PostMapping("/private/setup-financial-integrity/{companyId}")
     public ResponseEntity<ApiResponse> setUpFinancialIntegrityAndRiskControl(
             @PathVariable(name = "companyId") String companyId, 
             @RequestBody CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
@@ -236,7 +234,7 @@ public class CompanyController {
                 .build());
     }
 
-    @PostMapping("/private/kyc2/setup-execution-readiness/{companyId}")
+    @PostMapping("/private/setup-execution-readiness/{companyId}")
     public ResponseEntity<ApiResponse> setUpExecutionAndReportingReadiness(
             @PathVariable(name = "companyId") String companyId, 
             @RequestBody CompanyExecutionAndReportingReadinessCreateRequest request) {
@@ -247,7 +245,7 @@ public class CompanyController {
                 .build());
     }
 
-    @PostMapping("/private/kyc2/setup-capital-governance/{companyId}")
+    @PostMapping("/private/setup-capital-governance/{companyId}")
     public ResponseEntity<ApiResponse> setUpCapitalGovernanceAgreement(
             @PathVariable(name = "companyId") String companyId, 
             @RequestBody CompanyCapitalGovernanceAgreementCreateRequest request) {

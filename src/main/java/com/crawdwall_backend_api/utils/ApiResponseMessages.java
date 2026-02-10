@@ -41,7 +41,7 @@ public interface ApiResponseMessages {
     String ERROR_COMPANY_TRACK_RECORD_CREDIBILITY_MAJOR_PROJECTS_DELIVERED_SOCIAL_MEDIA_LINKS_IS_REQUIRED = "At least one major project delivered social media link is required to setup company track record credibility.";
     String ERROR_COMPANY_APP_ACCESS_DISABLED = "Company app access is disabled. Please contact support for assistance.";
     
-    // KYC Level 2 - Banking and Financial Accounts
+
     String ERROR_KYC_LEVEL_ONE_NOT_COMPLETED = "KYC Level 1 must be completed before starting KYC Level 2.";
     String ERROR_BANK_NAME_REQUIRED = "Bank name is required.";
     String ERROR_ACCOUNT_NAME_REQUIRED = "Account name is required.";
@@ -49,13 +49,13 @@ public interface ApiResponseMessages {
     String ERROR_ACCOUNT_TYPE_REQUIRED = "Account type is required.";
     String ERROR_ACCOUNT_CURRENCY_REQUIRED = "Account currency is required.";
     
-    // KYC Level 2 - Authorized Signatories and Control
+
     String ERROR_PRIMARY_SIGNATORY_NAME_REQUIRED = "Primary signatory name is required.";
     String ERROR_SIGNATORY_ROLE_REQUIRED = "Signatory role is required.";
     String ERROR_SIGNATORY_EMAIL_REQUIRED = "Signatory email is required.";
     String ERROR_SIGNATORY_PHONE_REQUIRED = "Signatory phone number is required.";
     
-    // KYC Level 2 - Financial Integrity and Risk Controls
+   
     String ERROR_PRIMARY_REVENUE_SOURCES_REQUIRED = "At least one primary revenue source is required.";
     String ERROR_EXPECTED_TRANSACTION_VOLUME_REQUIRED = "Expected transaction volume is required.";
     String ERROR_SOURCE_OF_FUNDS_DECLARATION_REQUIRED = "At least one source of funds declaration is required.";
@@ -69,7 +69,7 @@ public interface ApiResponseMessages {
     String ERROR_SANCTIONS_NATURE_REQUIRED = "Sanctions nature is required when subject to sanctions is Yes.";
     String ERROR_SANCTIONS_STATUS_REQUIRED = "Sanctions current status is required when subject to sanctions is Yes.";
     
-    // KYC Level 2 - Execution and Reporting Readiness
+   
     String ERROR_FINANCE_LEAD_FULL_NAME_REQUIRED = "Finance lead full name is required.";
     String ERROR_FINANCE_LEAD_ROLE_REQUIRED = "Finance lead role is required.";
     String ERROR_FINANCE_LEAD_EMAIL_REQUIRED = "Finance lead email is required.";
@@ -81,7 +81,7 @@ public interface ApiResponseMessages {
     String ERROR_COUNTERPARTY_PLATFORM_REQUIRED = "Counterparty/platform used is required when past escrow use is Yes.";
     String ERROR_DURATION_OF_AGREEMENT_REQUIRED = "Duration of arrangement is required when past escrow use is Yes.";
     
-    // KYC Level 2 - Capital Governance Agreement
+    
     String ERROR_CONSENT_MILESTONE_DISBURSEMENT_REQUIRED = "Consent to milestone-based disbursement is required.";
     String ERROR_CONSENT_ESCROW_ACCOUNT_REQUIRED = "Consent to escrow or controlled account is required.";
     String ERROR_CONSENT_THIRD_PARTY_MONITORING_REQUIRED = "Consent to third-party monitoring is required.";

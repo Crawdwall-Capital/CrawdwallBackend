@@ -10,18 +10,13 @@ import java.util.Set;
 
 @Builder
 public record CompanyExecutionAndReportingReadinessCreateRequest(
-    // Internal Finance Lead / Contact Person
     @JsonProperty(required = true) String fullName,
     @JsonProperty(required = true) String role,
     @JsonProperty(required = true) String email,
     @JsonProperty(required = true) String phoneNumber,
-    
-    // Accounting and Reporting
     @JsonProperty(required = true) CompanyAccountSystem accountingSystemUsed,
     @JsonProperty(required = true) CompanyFinancialReporting financialReportingFrequency,
-    
-    // Escrow / Third-Party Governance
-    @JsonProperty(required = true) boolean hasPastEscrowUse,
+    boolean hasPastEscrowUse,
     Set<CompanyTypeOfArrangement> typeOfArrangement,
     String purposeOfEscrow,
     String counterpartyPlatformUsed,
