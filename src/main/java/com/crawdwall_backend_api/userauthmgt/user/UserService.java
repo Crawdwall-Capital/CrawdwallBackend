@@ -418,7 +418,7 @@ public class UserService {
 		 }
 
 		 if(user.getUserType() == UserType.COMPANY && userOtpType == UserOtpType.ACCOUNT_ACTIVATION){
-//			emailSenderService.sendCompanyAccountActivationEmail(user.getEmailAddress(), user.getFirstName(), otp.get("expiresAt"), otp.get("otp"));
+		emailSenderService.sendCompanyAccountActivationEmail(user.getEmailAddress(), user.getFirstName(), otp.get("expiresAt"), otp.get("otp"));
 		 }
 
 	}
