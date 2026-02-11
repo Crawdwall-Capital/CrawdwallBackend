@@ -17,6 +17,7 @@ import com.crawdwall_backend_api.userauthmgt.user.response.UserCreateResponse;
 import com.crawdwall_backend_api.userauthmgt.user.UserType;
 import com.crawdwall_backend_api.company.request.CompanyUpdateRequest;
 import com.crawdwall_backend_api.company.response.CompanyResponse;
+import com.crawdwall_backend_api.company.response.CompanyKyc1ReviewResponse;
 import com.crawdwall_backend_api.utils.PaginatedData;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.domain.Page;
@@ -864,5 +865,42 @@ public class CompanyService {
         }
     }
 
+    public CompanyKyc1ReviewResponse getKyc1ReviewData(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        return CompanyKyc1ReviewResponse.builder()
+                .companyName(company.getCompanyName())
+                .companyEmail(company.getCompanyEmail())
+                .companyPhone(company.getCompanyPhone())
+                .companyWebsite(company.getCompanyWebsite())
+                .companyType(company.getCompanyType())
+                .companyEstablishedDate(company.getCompanyEstablishedDate())
+                .companySocialMediaType(company.getCompanySocialMediaType())
+                .companySocialMediaUrl(company.getCompanySocialMediaUrl())
+                .companyAddress(company.getCompanyAddress())
+                .leadershipAndOwnership(company.getCompanyLeaderShipOwnerShip())
+                .trackRecordAndCredibility(company.getCompanyTrackRecordCredibility())
+                .taxIdentificationDocument(company.getTaxIdentificationDocument())
+                .proofOfAddressDocument(company.getProofOfAddressDocument())
+                .governmentIdDocument(company.getGovernmentIdDocument())
+                .complianceAndIdentityDocument(company.getComplianceAndIdentityDocument())
+                .declarationAndConsent(company.getCompanyDeclarationConsent())
+                .build();
+    }
+
+    public void submitKyc1(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        
+        if (company.getCompanyKycOneSteps() == null || company.getCompanyKycOneSteps().size() < 5) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_KYC_LEVEL_ONE_NOT_COMPLETED);
+        }
+        
+        company.setKycCompleted(true);
+        company.setKycCompletedAt(LocalDateTime.now());
+        
+        companyRepository.save(company);
+    }
 
 }

@@ -14,6 +14,7 @@ import com.crawdwall_backend_api.utils.ApiResponse;
 import com.crawdwall_backend_api.company.request.CompanyCreateRequest;
 import com.crawdwall_backend_api.company.request.CompanyUpdateRequest;
 import com.crawdwall_backend_api.company.response.CompanyResponse;
+import com.crawdwall_backend_api.company.response.CompanyKyc1ReviewResponse;
 import com.crawdwall_backend_api.utils.PaginatedData;
 import org.springframework.web.bind.annotation.*;
 import com.crawdwall_backend_api.userauthmgt.user.request.PasswordChangeRequest;
@@ -253,6 +254,25 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
                 .message("Capital governance agreement setup successfully")
+                .build());
+    }
+
+    @GetMapping("/private/company-review/{companyId}")
+    public ResponseEntity<ApiResponse> getKyc1Review(@PathVariable(name = "companyId") String companyId) {
+        CompanyKyc1ReviewResponse reviewData = companyService.getKyc1ReviewData(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("KYC Level 1 review data retrieved successfully")
+                .data(reviewData)
+                .build());
+    }
+
+    @PostMapping("/private/company-submit/{companyId}")
+    public ResponseEntity<ApiResponse> submitKyc1(@PathVariable(name = "companyId") String companyId) {
+        companyService.submitKyc1(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("KYC Level 1 submitted successfully. You can now proceed to KYC Level 2.")
                 .build());
     }
 
