@@ -81,9 +81,13 @@ public class MailgunEmailSenderServiceImpl implements EmailSenderService {
             context.setVariable("firstName", firstName);
             context.setVariable("emailAddress", emailAddress);
             context.setVariable("expiryTime", expiryTimeOnly);
+           context.setVariable("otp", otp);
+
+
             context.setVariable("currentYear", LocalDate.now().getYear());
             context.setVariable("unsubscribeUrl", "unsubscribeUrl.com");
             context.setVariable("privacyUrl", "privacyUrl.com");
+            
             String htmlBody = templateEngine.process("company-account-activation-template", context);
             sendHtmlEmail(senderEmail, emailAddress, "Company Account Activation", htmlBody);
         } catch (Exception e) {
