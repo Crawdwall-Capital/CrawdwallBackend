@@ -81,13 +81,48 @@ public class MailgunEmailSenderServiceImpl implements EmailSenderService {
             context.setVariable("firstName", firstName);
             context.setVariable("emailAddress", emailAddress);
             context.setVariable("expiryTime", expiryTimeOnly);
+           context.setVariable("otp", otp);
+
+
             context.setVariable("currentYear", LocalDate.now().getYear());
             context.setVariable("unsubscribeUrl", "unsubscribeUrl.com");
             context.setVariable("privacyUrl", "privacyUrl.com");
+            
             String htmlBody = templateEngine.process("company-account-activation-template", context);
             sendHtmlEmail(senderEmail, emailAddress, "Company Account Activation", htmlBody);
         } catch (Exception e) {
             log.error("Error sending company account activation email: {}", e.getMessage());
+        }
+    }
+
+    @Override
+    public void sendCompanyPasswordResetEmail(String emailAddress, String otp, String firstName) {
+        try {
+            // Generate expiry time (10 minutes from now)
+            LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(10);
+
+            // Format expiry time as "4:41 PM"
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
+            String expiryTimeOnly = expiryTime.format(timeFormatter);
+
+            // Format current year
+            String currentYear = String.valueOf(LocalDate.now().getYear());
+
+            Context context = new Context();
+            context.setVariable("firstName", firstName);
+            context.setVariable("emailAddress", emailAddress);
+            context.setVariable("otp", otp); // Pass OTP to template
+            context.setVariable("expiryTime", expiryTimeOnly);
+            context.setVariable("currentYear", currentYear);
+            context.setVariable("unsubscribeUrl", "https://crawdwall.com/unsubscribe");
+            context.setVariable("privacyUrl", "https://crawdwall.com/privacy");
+
+            String htmlBody = templateEngine.process("company-password-reset-template", context);
+            sendHtmlEmail(senderEmail, emailAddress, "Reset Your Crawdwall Capital Password", htmlBody);
+
+            log.info("Password reset OTP email sent to: {}", emailAddress);
+        } catch (Exception e) {
+            log.error("Error sending company password reset email to {}: {}", emailAddress, e.getMessage(), e);
         }
     }
 

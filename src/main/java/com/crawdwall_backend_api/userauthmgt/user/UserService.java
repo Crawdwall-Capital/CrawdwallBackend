@@ -205,8 +205,8 @@ public class UserService {
 			.profilePictureUrl(user.getProfilePictureUrl())
 			.dateOfBirth(user.getDateOfBirth())
 			.isActive(user.isActive())
-			.createdAt(user.getCreatedAt())
-			.updatedAt(user.getUpdatedAt())
+//			.createdAt(user.getCreatedAt())
+//			.updatedAt(user.getUpdatedAt())
 			.isVerified(user.isVerified())
 			.build();
 	}
@@ -229,7 +229,29 @@ public class UserService {
 		user.setActive(activeStatus);
 		return buildUserResponse(updateUser(user));
 	}
+    private String maskEmail(String email) {
+        if (email == null || email.isEmpty() || !email.contains("@")) {
+            return "***@***";
+        }
 
+        String[] parts = email.split("@");
+        if (parts.length != 2) {
+            return "***@***";
+        }
+
+        String username = parts[0];
+        String domain = parts[1];
+
+        if (username.length() <= 2) {
+            return "***@" + domain;
+        }
+
+        return username.charAt(0) +
+                "***" +
+                username.charAt(username.length() - 1) +
+                "@" +
+                domain;
+    }
 
 	/**
 	 * Authenticates a user based on the provided email address and password.
@@ -241,26 +263,49 @@ public class UserService {
 	 *                                   credentials, inactive account, or blocked
 	 *                                   account
 	 */
-	public UserResponse authenticateUser(UserAuthRequest userAuthRequest, UserType userType) {
+    public UserResponse authenticateUser(UserAuthRequest userAuthRequest, UserType userType) {
+        log.info("#01 [authenticateUser] START");
+        log.info("#02 Email: {}", maskEmail(userAuthRequest.emailAddress()));
+        log.info("#03 UserType: {}", userType);
 
-		User user = userRepository.findByEmailAddressIgnoreCaseAndUserTypeAndIsDeleted(userAuthRequest.emailAddress(), userType, false)
-				.orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_USER_INVALID_EMAIL_OR_PASSWORD));
+        // Step 1: Find user
+        log.info("#04 Finding user in database...");
+        User user = userRepository
+                .findByEmailAddressIgnoreCaseAndUserTypeAndIsDeleted(
+                        userAuthRequest.emailAddress(), userType, false)
+                .orElseThrow(() -> {
+                    log.error("#05 !! USER NOT FOUND !!");
+                    return new InvalidInputException(
+                            ApiResponseMessages.ERROR_USER_INVALID_EMAIL_OR_PASSWORD);
+                });
+        log.info("#06 User found: {}", user.getId());
 
-		if (!bCryptPasswordEncoder.matches(userAuthRequest.password(), user.getPassword())) {
-			throw new InvalidInputException(ApiResponseMessages.ERROR_USER_INVALID_EMAIL_OR_PASSWORD);
-		}
+        // Step 2: Verify password
+        log.info("#07 Verifying password...");
+        if (!bCryptPasswordEncoder.matches(userAuthRequest.password(), user.getPassword())) {
+            log.error("#08 !! PASSWORD VERIFICATION FAILED !!");
+            throw new InvalidInputException(
+                    ApiResponseMessages.ERROR_USER_INVALID_EMAIL_OR_PASSWORD);
+        }
+        log.info("#09 Password verified");
 
-		if (!user.isActive() && user.isVerified()) {
-			throw new InvalidOperationException(ApiResponseMessages.ERROR_USER_ACCOUNT_NOT_ACTIVE);
-		}
+        // Step 3: Check user status
+        log.info("#10 Checking user status...");
+        log.info("#11 Active: {}, Verified: {}", user.isActive(), user.isVerified());
 
+        if (!user.isActive() && user.isVerified()) {
+            log.error("#12 !! ACCOUNT NOT ACTIVE !!");
+            throw new InvalidOperationException(
+                    ApiResponseMessages.ERROR_USER_ACCOUNT_NOT_ACTIVE);
+        }
 
-//		if (!user.isVerified()) {
-//			throw new InvalidOperationException(ApiResponseMessages.ERROR_USER_ACCOUNT_NOT_VERIFIED);
-//		}
+        // Step 4: Build response
+        log.info("#13 Building response...");
+        UserResponse response = buildUserResponse(user);
 
-		return buildUserResponse(user);
-	}
+        log.info("#14 [authenticateUser] COMPLETED SUCCESSFULLY");
+        return response;
+    }
 
 
 	/**
@@ -308,7 +353,7 @@ public class UserService {
 //            emailSenderService.sendAdminPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName() + " " + user.getLastName());
         }
         if(user.getUserType() == UserType.COMPANY){
-//            emailSenderService.sendCompanyPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName());
+            emailSenderService.sendCompanyPasswordResetEmail(user.getEmailAddress(),  otp.get("otp"), user.getFirstName());
         }
 	}
 
@@ -373,7 +418,7 @@ public class UserService {
 		 }
 
 		 if(user.getUserType() == UserType.COMPANY && userOtpType == UserOtpType.ACCOUNT_ACTIVATION){
-//			emailSenderService.sendCompanyAccountActivationEmail(user.getEmailAddress(), user.getFirstName(), otp.get("expiresAt"), otp.get("otp"));
+		emailSenderService.sendCompanyAccountActivationEmail(user.getEmailAddress(), user.getFirstName(), otp.get("expiresAt"), otp.get("otp"));
 		 }
 
 	}

@@ -8,7 +8,7 @@ public record CompanyCreateRequest(
     @JsonProperty(required = true) String companyName,
     @JsonProperty(required = true) String companyEmail,
     @JsonProperty(required = true) String password,
-    @JsonProperty(required = true) String confirmPassword
+    boolean acceptTermsAndConditions
 ) {
     
 }

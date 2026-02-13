@@ -1,0 +1,10 @@
+package com.crawdwall_backend_api.company;
+
+public enum CompanyKycOneStep {
+    COMPANY_PROFILE_SETUP,
+    LEADER_AND_OWNERSHIP,
+    TRACK_RECORDS_AND_CREDIBILITY,
+    COMPLIANCE_AND_IDENTITY,
+    DECLARATION_AND_CONSENT,
+    ADDRESS_SETUP
+}

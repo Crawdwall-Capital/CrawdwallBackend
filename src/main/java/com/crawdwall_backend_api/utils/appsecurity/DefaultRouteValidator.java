@@ -18,9 +18,10 @@ public class DefaultRouteValidator {
     private final JwtService jwtService;
 
     // Endpoint patterns
-    public static final List<Pattern> APP_USER_ENDPOINTS = List.of(
+    public static final List<Pattern> COMPANY_ENDPOINTS = List.of(
             Pattern.compile("/api/v1/app-user/private.*"),
             Pattern.compile("/api/v1/waitlist/private.*"),
+            Pattern.compile("/api/v1/company/private.*"),
             Pattern.compile("/api/v1/utilities/private.*")
     );
 
@@ -84,11 +85,11 @@ public class DefaultRouteValidator {
     }
 
     // Check if endpoint requires app user role
-    public boolean isAppUserEndpoint(HttpServletRequest req) {
+    public boolean isCompanyEndpoint(HttpServletRequest req) {
         log.info("1: isAppUserEndpoint: Checking if endpoint requires app user role: {}", req.getRequestURI());
         String uri = req.getRequestURI();
         log.info("2: isAppUserEndpoint: URI: {}", uri);
-        boolean matches = APP_USER_ENDPOINTS.stream().anyMatch(p -> p.matcher(uri).matches());
+        boolean matches = COMPANY_ENDPOINTS.stream().anyMatch(p -> p.matcher(uri).matches());
         log.info("3: isAppUserEndpoint: Matches: {}", matches);
         if (matches) {
             log.info("4: isAppUserEndpoint: Endpoint requires app user role: {}", uri);
@@ -121,8 +122,8 @@ public class DefaultRouteValidator {
         switch (userRole) {
             case "ADMIN":
                 return isAdminEndpoint(req);
-            case "APP_USER":
-                return isAppUserEndpoint(req);
+            case "COMPANY":
+                return isCompanyEndpoint(req);
             case "SUPER_ADMIN":
                 return isSuperAdminEndpoint(req);
             default:

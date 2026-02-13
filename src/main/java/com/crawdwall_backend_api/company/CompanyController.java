@@ -14,12 +14,25 @@ import com.crawdwall_backend_api.utils.ApiResponse;
 import com.crawdwall_backend_api.company.request.CompanyCreateRequest;
 import com.crawdwall_backend_api.company.request.CompanyUpdateRequest;
 import com.crawdwall_backend_api.company.response.CompanyResponse;
+import com.crawdwall_backend_api.company.response.CompanyKyc1ReviewResponse;
 import com.crawdwall_backend_api.utils.PaginatedData;
 import org.springframework.web.bind.annotation.*;
 import com.crawdwall_backend_api.userauthmgt.user.request.PasswordChangeRequest;
 import com.crawdwall_backend_api.userauthmgt.user.response.UserVerifyOtpRequest;
 
 import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpType;
+import com.crawdwall_backend_api.company.request.CompanyProfileSetUpCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyLeaderShipOwnerShipCreateRequest;
+import com.crawdwall_backend_api.company.request.DocumentEntityValueCreateRequestSetUp;
+import com.crawdwall_backend_api.company.request.CompanyDeclarationConsentCreateRequest;
+import com.crawdwall_backend_api.company.response.CompanyAuthResponse;
+import com.crawdwall_backend_api.userauthmgt.user.request.UserAuthRequest;
+import com.crawdwall_backend_api.company.request.CompanyBankingAndFinancialAccountsRequest;
+import com.crawdwall_backend_api.company.request.CompanyAuthorizedSignatoriesAndControlCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyFinancialIntegrityAndRiskControlCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyExecutionAndReportingReadinessCreateRequest;
+import com.crawdwall_backend_api.company.request.CompanyCapitalGovernanceAgreementCreateRequest;
+
 
 @RestController
 @RequestMapping("/api/v1/company")
@@ -111,7 +124,7 @@ public class CompanyController {
         .build());
     }
 
-    @PutMapping("/private/initiate-reset-password/{emailAddress}")
+    @PutMapping("/public/initiate-reset-password/{emailAddress}")
     public ResponseEntity<ApiResponse> initiateResetPassword(@PathVariable(name = "emailAddress") String emailAddress) {
         companyService.initiateResetPassword(emailAddress);
         return ResponseEntity.ok(ApiResponse.builder()
@@ -119,7 +132,7 @@ public class CompanyController {
         .build());
     }
     
-    @PutMapping("/private/verify-otp")
+    @PutMapping("/public/verify-otp")
     public ResponseEntity<ApiResponse> verifyOtp(@RequestBody UserVerifyOtpRequest request) {
         companyService.verifyOtp(request);
         return ResponseEntity.ok(ApiResponse.builder()
@@ -127,7 +140,7 @@ public class CompanyController {
         .build());
     }
     
-    @PutMapping("/private/resend-otp/{emailAddress}")
+    @PutMapping("/public/resend-otp/{emailAddress}")
     public ResponseEntity<ApiResponse> resendOtp(@PathVariable(name = "emailAddress") String emailAddress, @RequestParam(name = "otpType") UserOtpType userOtpType) {
         companyService.resendOtp(emailAddress, userOtpType);
         return ResponseEntity.ok(ApiResponse.builder()
@@ -135,5 +148,132 @@ public class CompanyController {
         .build());
     }
     
+    @PostMapping("/private/setup-profile/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyProfile(@PathVariable(name = "companyId") String companyId, @RequestBody CompanyProfileSetUpCreateRequest request) {
+        companyService.setUpCompanyProfile(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company profile setup successfully")
+        .build());
+    }
+
+
     
+
+    @PostMapping("/private/setup-ownership/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyLeaderShipOwnerShip(@PathVariable(name = "companyId") String companyId, @RequestBody CompanyLeaderShipOwnerShipCreateRequest request) {
+        companyService.setUpCompanyLeaderShipOwnerShip(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company leader and ownership setup successfully")
+        .build());
+    }
+
+    @PostMapping("/private/setup-credibility/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyTrackRecordCredibility(@PathVariable(name = "companyId") String companyId, @RequestBody CompanyTrackRecordCredibilityCreateRequest request) {
+        companyService.setUpCompanyTrackRecordCredibility(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company track record credibility setup successfully")
+        .build());
+    }
+
+    @PostMapping("/private/setup-compliance/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyComplianceAndIdentity(@PathVariable(name = "companyId") String companyId, @RequestBody DocumentEntityValueCreateRequestSetUp request) {
+        companyService.setUpCompanyComplianceAndIdentity(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company compliance and identity setup successfully")
+        .build());
+    }
+
+    @PostMapping("/private/setup-declaration-consent/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCompanyDeclarationConsent(@PathVariable(name = "companyId") String companyId, @RequestBody CompanyDeclarationConsentCreateRequest request) {
+        companyService.setUpCompanyDeclarationConsent(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Company declaration consent setup successfully")
+        .build());
+    }
+
+
+    @PostMapping("/public/authenticate")
+    ResponseEntity<ApiResponse> authenticate(@RequestBody UserAuthRequest request) {
+        CompanyAuthResponse companyAuthResponse = companyService.authenticateCompany(request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Company authenticated successfully.")
+                .data(companyAuthResponse)
+                .build());
+    }
+
+    @PostMapping("/private/setup-banking/{companyId}")
+    public ResponseEntity<ApiResponse> setUpBankingAndFinancialAccounts(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyBankingAndFinancialAccountsRequest request) {
+        companyService.setUpBankingAndFinancialAccounts(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Banking and financial accounts setup successfully")
+                .build());
+    }
+
+    @PostMapping("/private/setup-signatories/{companyId}")
+    public ResponseEntity<ApiResponse> setUpAuthorizedSignatoriesAndControl(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyAuthorizedSignatoriesAndControlCreateRequest request) {
+        companyService.setUpAuthorizedSignatoriesAndControl(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Authorized signatories and control setup successfully")
+                .build());
+    }
+
+    @PostMapping("/private/setup-financial-integrity/{companyId}")
+    public ResponseEntity<ApiResponse> setUpFinancialIntegrityAndRiskControl(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyFinancialIntegrityAndRiskControlCreateRequest request) {
+        companyService.setUpFinancialIntegrityAndRiskControl(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Financial integrity and risk controls setup successfully")
+                .build());
+    }
+
+    @PostMapping("/private/setup-execution-readiness/{companyId}")
+    public ResponseEntity<ApiResponse> setUpExecutionAndReportingReadiness(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyExecutionAndReportingReadinessCreateRequest request) {
+        companyService.setUpExecutionAndReportingReadiness(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Execution and reporting readiness setup successfully")
+                .build());
+    }
+
+    @PostMapping("/private/setup-capital-governance/{companyId}")
+    public ResponseEntity<ApiResponse> setUpCapitalGovernanceAgreement(
+            @PathVariable(name = "companyId") String companyId, 
+            @RequestBody CompanyCapitalGovernanceAgreementCreateRequest request) {
+        companyService.setUpCapitalGovernanceAgreement(companyId, request);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Capital governance agreement setup successfully")
+                .build());
+    }
+
+    @GetMapping("/private/company-review/{companyId}")
+    public ResponseEntity<ApiResponse> getKyc1Review(@PathVariable(name = "companyId") String companyId) {
+        CompanyKyc1ReviewResponse reviewData = companyService.getKyc1ReviewData(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("KYC Level 1 review data retrieved successfully")
+                .data(reviewData)
+                .build());
+    }
+
+    @PostMapping("/private/company-submit/{companyId}")
+    public ResponseEntity<ApiResponse> submitKyc1(@PathVariable(name = "companyId") String companyId) {
+        companyService.submitKyc1(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("KYC Level 1 submitted successfully. You can now proceed to KYC Level 2.")
+                .build());
+    }
+
 }

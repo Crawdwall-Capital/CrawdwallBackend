@@ -2,13 +2,10 @@ package com.crawdwall_backend_api.company;
 
 public enum CompanyType {
     
-    TECHNOLOGY,
-    MANUFACTURING,
-    SERVICES,
-    RETAIL,
-    CONSTRUCTION,
-    FINANCE,
-    EDUCATION,
-    HEALTHCARE,
+    EVENT_COMPANY,
+    CORPORATE_COMPANY,
+    CREATIVE_STUDIO,
+    NGO_NON_PROFIT,
+    INDIVIDUAL_LED_PROJECT,
     OTHER
 }

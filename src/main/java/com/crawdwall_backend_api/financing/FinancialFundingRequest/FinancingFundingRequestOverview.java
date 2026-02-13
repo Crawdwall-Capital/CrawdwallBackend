@@ -1,0 +1,16 @@
+package com.crawdwall_backend_api.financing.financialfundingrequest;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class FinancingFundingRequestOverview {
+    private Double totalCapitalRequired;
+    private String capitalCurrency;
+    private String intendedUseOfFunds;
+}
