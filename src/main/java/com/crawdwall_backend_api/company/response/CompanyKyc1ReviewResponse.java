@@ -1,6 +1,8 @@
 package com.crawdwall_backend_api.company.response;
 
 import com.crawdwall_backend_api.company.*;
+import com.crawdwall_backend_api.company.companyKycOne.CompanyLeaderShipOwnerShip;
+import com.crawdwall_backend_api.company.companyKycOne.CompanyTrackRecordCredibility;
 import com.crawdwall_backend_api.utils.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

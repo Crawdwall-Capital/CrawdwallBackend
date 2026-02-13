@@ -1,4 +1,4 @@
-package com.crawdwall_backend_api.company.request;
+package com.crawdwall_backend_api.company.companyKycOne.request;
 
 import lombok.Builder;
 import com.fasterxml.jackson.annotation.JsonProperty;

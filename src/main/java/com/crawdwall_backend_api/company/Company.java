@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 public class Company extends BaseEntity {
-@Indexed(unique = true)
+
 private   String companyName;
 @Indexed(unique = true)
 private   String companyEmail;
@@ -40,13 +40,10 @@ private  LocalDateTime agreedTermsAndConditionAt;
 private   CompanySocialMediaType companySocialMediaType;
 private   String companySocialMediaUrl;
 private   Set<CompanyKycOneStep> companyKycOneSteps;
-private   Set<CompanyLeaderShipOwnerShip> companyLeaderShipOwnerShip;
-private   CompanyTrackRecordCredibility companyTrackRecordCredibility;
-private   DocumentEntityValue taxIdentificationDocument;
-private   DocumentEntityValue proofOfAddressDocument;
-private   DocumentEntityValue governmentIdDocument;
-private   DocumentEntityValue complianceAndIdentityDocument;
-private   CompanyDeclarationConsent companyDeclarationConsent;
+
+
+
+
 private   boolean isKycCompleted;
 private   boolean isDocumentVerified;
 private   LocalDateTime kycCompletedAt;
@@ -54,7 +51,7 @@ private   LocalDateTime documentVerifiedAt;
 private   LocalDateTime kycStartedAt;
 private   LocalDateTime documentStartedAt;
 
-// KYC Level 2 fields
+
 private   Set<CompanyKycTwoStep> companyKycTwoSteps;
 private   Set<CompanyBankingAndFinancialAccounts> companyBankingAndFinancialAccounts;
 private   Set<CompanyAuthorizedSignatoriesAndControl> companyAuthorizedSignatoriesAndControl;

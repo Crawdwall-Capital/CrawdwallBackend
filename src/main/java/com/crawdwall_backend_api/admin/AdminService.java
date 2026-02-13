@@ -219,33 +219,34 @@ public class AdminService {
     }
 
 
-//    @PostConstruct
-//    private void setSuperAdmin() {
-//
-//        if (!userService.existsByEmailAddressIgnoreCase(superAdminEmailAddress)) {
-//            log.info("Super admin not found, creating super admin");
-//            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
-//                    .firstName(superAdminFirstName)
-//                    .lastName(superAdminLastName)
-//                    .emailAddress(superAdminEmailAddress)
-//                    .userType(UserType.ADMIN)
-//                    .password(superAdminPassword)
-//                    .build();
-//
-//            UserCreateResponse userCreateResponse = userService.createUser(userCreateRequest);
-//
-//            adminRepository.save(Admin.builder()
-//                    .userId(userCreateResponse.userId())
-//                    .isActive(true)
-//                    .isVerified(true)
-//                    .isDefault(true)
+   @PostConstruct
+    private void setSuperAdmin() {
+       System.out.println("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::1");
+        if (!userService.existsByEmailAddressIgnoreCase(superAdminEmailAddress)) {
+            System.out.println("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::2");
+            log.info("Super admin not found, creating super admin");
+            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+                    .firstName(superAdminFirstName)
+                    .lastName(superAdminLastName)
+                    .emailAddress(superAdminEmailAddress)
+                    .userType(UserType.ADMIN)
+                    .password(superAdminPassword)
+                    .build();
+
+            UserCreateResponse userCreateResponse = userService.createUser(userCreateRequest);
+
+            adminRepository.save(Admin.builder()
+                    .userId(userCreateResponse.userId())
+                    .isActive(true)
+                    .isVerified(true)
+                    .isDefault(true)
 //                    .roleId(roleService.getRoleByName("SUPER_ADMIN").id())
-//                    .build());
-//
-//            log.info("Super admin created successfully");
-//        }
-//        log.info("Super admin found, skipping creation");
-//    }
+                    .build());
+
+            log.info("Super admin created successfully");
+        }
+        log.info("Super admin found, skipping creation");
+    }
 
 
     public PaginatedData searchAdmins(String searchParam, int page, int size) {

@@ -88,4 +88,6 @@ public interface ApiResponseMessages {
     String ERROR_UNDERSTAND_SUSPENSION_POLICY_REQUIRED = "Understanding of suspension policy is required.";
     String ERROR_DIGITAL_SIGNATURE_REQUIRED = "Digital signature is required.";
     String ERROR_AGREEMENT_DATE_REQUIRED = "Agreement date is required.";
+    String ERROR_COMPANY_KYC_ONE_NOT_STARTED = "Company KYC one not started.";
+    String ERROR_COMPANY_KYC_ONE_COMPANY_PROFILE_SETUP_NOT_COMPLETED = "Company profile setup is not completed.";
 }

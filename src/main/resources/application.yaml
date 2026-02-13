@@ -55,8 +55,8 @@ application:
     apikey: ${SENDER_API_KEY:9ikr0MsASJhgLPcOCfX1EiNbxvzIByjSvJKs4M6pZ2KVVqROl9vrsZvewWfwjZ2G}
 
   superAdmin:
-    emailAddress: ${SUPER_ADMIN_EMAIL:admin@nominee-director.com}
-    password: ${SUPER_ADMIN_PASSWORD:password}
+    emailAddress: ${SUPER_ADMIN_EMAIL:crawdwallcapital@gmail.com}
+    password: ${SUPER_ADMIN_PASSWORD:password@1}
     firstName: ${SUPER_ADMIN_FIRST_NAME:Super}
     lastName: ${SUPER_ADMIN_LAST_NAME:Admin}
     phoneNumber: ${SUPER_ADMIN_PHONE:1234567890}

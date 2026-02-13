@@ -1,8 +1,9 @@
-package com.crawdwall_backend_api.company;
+package com.crawdwall_backend_api.company.companyKycOne;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
+import com.crawdwall_backend_api.company.TrackRecordCredibilityType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
