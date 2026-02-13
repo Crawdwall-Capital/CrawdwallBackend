@@ -1,4 +1,4 @@
-package com.crawdwall_backend_api.company;
+package com.crawdwall_backend_api.company.companyKycOne;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

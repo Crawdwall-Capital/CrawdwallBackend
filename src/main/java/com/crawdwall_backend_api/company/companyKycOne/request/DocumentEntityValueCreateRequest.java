@@ -1,4 +1,4 @@
-package com.crawdwall_backend_api.company.request;
+package com.crawdwall_backend_api.company.companyKycOne.request;
 
 import com.crawdwall_backend_api.company.DocumentEntityValueType;
 import lombok.AllArgsConstructor;

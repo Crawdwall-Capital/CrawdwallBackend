@@ -1,5 +1,6 @@
-package com.crawdwall_backend_api.company;
+package com.crawdwall_backend_api.company.companyKycOne.request;
 
+import com.crawdwall_backend_api.company.TrackRecordCredibilityType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
