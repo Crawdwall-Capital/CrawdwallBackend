@@ -321,7 +321,7 @@ public class UserService {
 	public void resetPassword(UserResetPasswordRequest userResetPasswordRequest) {
 		User user = userRepository.findByEmailAddressIgnoreCaseAndIsDeleted(userResetPasswordRequest.emailAddress(), false)
 				.orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_USER_INVALID_ACCOUNT));
-        if(!user.isActive()){
+        if(!user.isActive() && user.isVerified()){
             throw new InvalidOperationException(ApiResponseMessages.ERROR_USER_ACCOUNT_NOT_ACTIVE);
         }
         if(passwordEncoder.matches(userResetPasswordRequest.newPassword(),user.getPassword())){
@@ -346,7 +346,7 @@ public class UserService {
 
 		User user = userRepository.findByEmailAddressIgnoreCaseAndUserTypeAndIsDeleted(emailAddress, userType, false)
 				.orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_USER_INVALID_ACCOUNT));
-        if (!user.isActive()) {
+        if (!user.isActive() && user.isVerified()) {
             throw new InvalidOperationException(ApiResponseMessages.ERROR_USER_ACCOUNT_NOT_ACTIVE);
         }
 
