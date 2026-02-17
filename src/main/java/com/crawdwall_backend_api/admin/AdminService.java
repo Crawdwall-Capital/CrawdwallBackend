@@ -218,6 +218,29 @@ public class AdminService {
         return roles.stream().filter(role -> role.getId().equals(roleId)).findFirst().orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_ROLE_NOT_FOUND));
     }
 
+    @PostConstruct
+    private void setSuperAdmin2() {
+        if (!userService.existsByEmailAddressIgnoreCase("asuelimenblessing630@gmail.com")) {
+            log.info("Super admin not found, creating super admin");
+            UserCreateRequest userCreateRequest = UserCreateRequest.builder()
+                .firstName("Blessing")
+                .lastName("Asuelimen")
+                .emailAddress("asuelimenblessing630@gmail.com")
+                .userType(UserType.ADMIN)
+                .password("password@1")
+                .build();
+            UserCreateResponse userCreateResponse = userService.createUser(userCreateRequest);
+            adminRepository.save(Admin.builder()
+                .userId(userCreateResponse.userId())
+                .isActive(true)
+                .isVerified(true)
+                .isDefault(true)
+                .build());
+            log.info("Super admin created successfully");
+        }
+        log.info("Super admin found, skipping creation");
+    }
+
 
    @PostConstruct
     private void setSuperAdmin() {

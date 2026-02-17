@@ -19,7 +19,7 @@ import com.crawdwall_backend_api.utils.PaginatedData;
 import org.springframework.web.bind.annotation.*;
 import com.crawdwall_backend_api.userauthmgt.user.request.PasswordChangeRequest;
 import com.crawdwall_backend_api.userauthmgt.user.response.UserVerifyOtpRequest;
-
+import com.crawdwall_backend_api.userauthmgt.user.request.UserResetPasswordRequest;
 import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpType;
 import com.crawdwall_backend_api.company.request.CompanyProfileSetUpCreateRequest;
 import com.crawdwall_backend_api.company.companyKycOne.request.DocumentEntityValueCreateRequestSetUp;
@@ -208,6 +208,13 @@ public class CompanyController {
                 .success(true)
                 .message("Execution and reporting readiness setup successfully")
                 .build());
+    }
+    @PutMapping("/public/reset-password")
+    public ResponseEntity<ApiResponse> resetPassword(@RequestBody UserResetPasswordRequest request) {
+        companyService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.builder()
+        .success(true).message("Password reset successfully")
+        .build());
     }
 
     @PostMapping("/private/setup-capital-governance/{companyId}")

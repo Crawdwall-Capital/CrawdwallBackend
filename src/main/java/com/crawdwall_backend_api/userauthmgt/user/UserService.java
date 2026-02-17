@@ -358,6 +358,7 @@ public class UserService {
             emailSenderService.sendCompanyPasswordResetEmail(user.getEmailAddress(),  otp.get("otp"), user.getFirstName());
         }
 	}
+	
 
 
 	public boolean existsByEmailAddressIgnoreCase(String emailAddress) {
