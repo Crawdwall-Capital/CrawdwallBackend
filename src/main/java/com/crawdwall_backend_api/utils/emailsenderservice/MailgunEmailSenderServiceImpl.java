@@ -208,6 +208,30 @@ public class MailgunEmailSenderServiceImpl implements EmailSenderService {
     }
 
     @Override
+    public void sendAdminPasswordResetEmail(String emailAddress, String id, String otp, String fullName) {
+        try {
+            // Parse expiry from OTP or generate new expiry
+            LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(10);
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
+            String expiryTimeOnly = expiryTime.format(timeFormatter);
+
+            Context context = new Context();
+            context.setVariable("fullName", fullName);
+            context.setVariable("emailAddress", emailAddress);
+            context.setVariable("otpCode", otp);
+            context.setVariable("expiryTime", expiryTimeOnly);
+            context.setVariable("currentYear", LocalDate.now().getYear());
+
+
+            String htmlBody = templateEngine.process("admin-password-reset-template", context);
+            sendHtmlEmail(senderEmail, emailAddress, "Admin Password Reset", htmlBody);
+            log.info("Admin password reset email sent successfully to: {}", emailAddress);
+        } catch (Exception e) {
+            log.error("Error sending admin password reset email: {}", e.getMessage());
+        }
+    }
+
+    @Override
     public void appUserResetPasswordEmail(String otp, String expireAt, String emailAddress) {
         try {
            // Parse the full date string with the correct format

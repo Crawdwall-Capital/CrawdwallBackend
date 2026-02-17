@@ -20,4 +20,6 @@ public interface EmailSenderService {
     void sendCompanyAccountActivationEmail(String emailAddress, String firstName, String expiresAt, String otp);
 
     void sendCompanyPasswordResetEmail(String emailAddress, String otp, String firstName);
+
+    void sendAdminPasswordResetEmail(String emailAddress, String id, String otp, String fullName);
 }

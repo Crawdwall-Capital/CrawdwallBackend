@@ -352,7 +352,7 @@ public class UserService {
 
 		Map<String, String> otp = userOtpService.generateOtpForUser(user.getId(), UserOtpType.PASSWORD_RESET);
         if(user.getUserType() == UserType.ADMIN){
-//            emailSenderService.sendAdminPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName() + " " + user.getLastName());
+           emailSenderService.sendAdminPasswordResetEmail(user.getEmailAddress(), user.getId(), otp.get("otp"), user.getFirstName() + " " + user.getLastName());
         }
         if(user.getUserType() == UserType.COMPANY){
             emailSenderService.sendCompanyPasswordResetEmail(user.getEmailAddress(),  otp.get("otp"), user.getFirstName());
