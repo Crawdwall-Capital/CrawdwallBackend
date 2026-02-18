@@ -1,0 +1,370 @@
+{
+    "info": {
+        "name": "KYC Verification Endpoints",
+        "description": "Collection for testing Admin KYC verification endpoints",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8088/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "companyId",
+            "value": "YOUR_COMPANY_ID_HERE",
+            "type": "string"
+        },
+        {
+            "key": "adminToken",
+            "value": "YOUR_ADMIN_JWT_TOKEN_HERE",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "KYC Overview",
+            "item": [
+                {
+                    "name": "Get KYC Overview",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-one/admin/private/get/{{companyId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-one",
+                                "admin",
+                                "private",
+                                "get",
+                                "{{companyId}}"
+                            ]
+                        },
+                        "description": "Get KYC overview with company name, user ID, and status badges for user, level 1, and level 2"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "KYC Level 1",
+            "item": [
+                {
+                    "name": "1. Get Company Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-one/admin/private/level-1/{{companyId}}/company-profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-one",
+                                "admin",
+                                "private",
+                                "level-1",
+                                "{{companyId}}",
+                                "company-profile"
+                            ]
+                        },
+                        "description": "Get company profile section (name, type, address, contact info)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2. Get Leadership & Ownership",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-one/admin/private/level-1/{{companyId}}/leadership-ownership",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-one",
+                                "admin",
+                                "private",
+                                "level-1",
+                                "{{companyId}}",
+                                "leadership-ownership"
+                            ]
+                        },
+                        "description": "Get leadership and ownership details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3. Get Track Record & Credibility",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-one/admin/private/level-1/{{companyId}}/track-record",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-one",
+                                "admin",
+                                "private",
+                                "level-1",
+                                "{{companyId}}",
+                                "track-record"
+                            ]
+                        },
+                        "description": "Get track record and credibility information"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "4. Get Compliance & Identity",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-one/admin/private/level-1/{{companyId}}/compliance-identity",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-one",
+                                "admin",
+                                "private",
+                                "level-1",
+                                "{{companyId}}",
+                                "compliance-identity"
+                            ]
+                        },
+                        "description": "Get compliance and identity documents (tax ID, certificate, proof of address, government ID)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5. Get Declarations & Consent",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-one/admin/private/level-1/{{companyId}}/declarations-consent",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-one",
+                                "admin",
+                                "private",
+                                "level-1",
+                                "{{companyId}}",
+                                "declarations-consent"
+                            ]
+                        },
+                        "description": "Get declarations and consent information"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "KYC Level 2",
+            "item": [
+                {
+                    "name": "1. Get Banking & Financial Accounts",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-two/admin/private/level-2/{{companyId}}/banking-financial-accounts",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-two",
+                                "admin",
+                                "private",
+                                "level-2",
+                                "{{companyId}}",
+                                "banking-financial-accounts"
+                            ]
+                        },
+                        "description": "Get banking and financial accounts information"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2. Get Authorized Signatories & Control",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-two/admin/private/level-2/{{companyId}}/authorized-signatories-control",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-two",
+                                "admin",
+                                "private",
+                                "level-2",
+                                "{{companyId}}",
+                                "authorized-signatories-control"
+                            ]
+                        },
+                        "description": "Get authorized signatories and control details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3. Get Financial Integrity & Risk Control",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-two/admin/private/level-2/{{companyId}}/financial-integrity-risk-control",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-two",
+                                "admin",
+                                "private",
+                                "level-2",
+                                "{{companyId}}",
+                                "financial-integrity-risk-control"
+                            ]
+                        },
+                        "description": "Get financial integrity and risk control details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "4. Get Execution & Reporting Readiness",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-two/admin/private/level-2/{{companyId}}/execution-reporting-readiness",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-two",
+                                "admin",
+                                "private",
+                                "level-2",
+                                "{{companyId}}",
+                                "execution-reporting-readiness"
+                            ]
+                        },
+                        "description": "Get execution and reporting readiness details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5. Get Capital Governance Agreement",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/company/kyc-two/admin/private/level-2/{{companyId}}/capital-governance-agreement",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "company",
+                                "kyc-two",
+                                "admin",
+                                "private",
+                                "level-2",
+                                "{{companyId}}",
+                                "capital-governance-agreement"
+                            ]
+                        },
+                        "description": "Get capital governance agreement details"
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

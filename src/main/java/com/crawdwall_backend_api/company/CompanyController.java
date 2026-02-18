@@ -15,6 +15,9 @@ import com.crawdwall_backend_api.company.request.CompanyCreateRequest;
 import com.crawdwall_backend_api.company.request.CompanyUpdateRequest;
 import com.crawdwall_backend_api.company.response.CompanyResponse;
 import com.crawdwall_backend_api.company.response.CompanyKyc1ReviewResponse;
+import com.crawdwall_backend_api.company.response.CompanyKycOverviewResponse;
+import com.crawdwall_backend_api.company.response.CompanyKycLevel1DetailsResponse;
+import com.crawdwall_backend_api.company.response.CompanyKycLevel2DetailsResponse;
 import com.crawdwall_backend_api.utils.PaginatedData;
 import org.springframework.web.bind.annotation.*;
 import com.crawdwall_backend_api.userauthmgt.user.request.PasswordChangeRequest;
@@ -39,6 +42,7 @@ import com.crawdwall_backend_api.company.request.CompanyCapitalGovernanceAgreeme
 public class CompanyController {
 
     private final CompanyService companyService;
+    private final com.crawdwall_backend_api.company.companyKycOne.CompanyKycOneService companyKycOneService;
 
     @PostMapping("/public/create")
     public ResponseEntity<ApiResponse> createCompany(@RequestBody CompanyCreateRequest request) {
@@ -247,4 +251,114 @@ public class CompanyController {
                 .build());
     }
 
+    @GetMapping("/kyc-one/admin/private/get/{companyId}")
+    public ResponseEntity<ApiResponse<Object>> getKycOverview(@PathVariable String companyId) {
+        CompanyKycOverviewResponse response = companyService.getKycOverview(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("KYC overview fetched successfully")
+                .data(response)
+                .build());
+    }
+
+
+    @GetMapping("/kyc-one/admin/private/level-1/{companyId}/company-profile")
+    public ResponseEntity<ApiResponse<Object>> getCompanyProfile(@PathVariable String companyId) {
+        CompanyKycLevel1DetailsResponse.CompanyProfileSection response = companyKycOneService.getCompanyProfile(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Company profile fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-one/admin/private/level-1/{companyId}/leadership-ownership")
+    public ResponseEntity<ApiResponse<Object>> getLeadershipOwnership(@PathVariable String companyId) {
+        var response = companyKycOneService.getLeadershipOwnership(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Leadership and ownership details fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-one/admin/private/level-1/{companyId}/track-record")
+    public ResponseEntity<ApiResponse<Object>> getTrackRecord(@PathVariable String companyId) {
+        var response = companyKycOneService.getTrackRecord(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Track record and credibility details fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-one/admin/private/level-1/{companyId}/compliance-identity")
+    public ResponseEntity<ApiResponse<Object>> getComplianceIdentity(@PathVariable String companyId) {
+        CompanyKycLevel1DetailsResponse.ComplianceIdentitySection response = companyKycOneService.getComplianceIdentity(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Compliance and identity documents fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-one/admin/private/level-1/{companyId}/declarations-consent")
+    public ResponseEntity<ApiResponse<Object>> getDeclarationsConsent(@PathVariable String companyId) {
+        CompanyDeclarationConsent response = companyKycOneService.getDeclarationsConsent(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Declarations and consent details fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-two/admin/private/level-2/{companyId}/banking-financial-accounts")
+    public ResponseEntity<ApiResponse<Object>> getBankingAndFinancialAccounts(@PathVariable String companyId) {
+        var response = companyService.getBankingAndFinancialAccounts(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Banking and financial accounts fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-two/admin/private/level-2/{companyId}/authorized-signatories-control")
+    public ResponseEntity<ApiResponse<Object>> getAuthorizedSignatoriesAndControl(@PathVariable String companyId) {
+        var response = companyService.getAuthorizedSignatoriesAndControl(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Authorized signatories and control details fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-two/admin/private/level-2/{companyId}/financial-integrity-risk-control")
+    public ResponseEntity<ApiResponse<Object>> getFinancialIntegrityAndRiskControl(@PathVariable String companyId) {
+        CompanyFinancialIntegrityAndRiskControl response = companyService.getFinancialIntegrityAndRiskControl(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Financial integrity and risk control details fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-two/admin/private/level-2/{companyId}/execution-reporting-readiness")
+    public ResponseEntity<ApiResponse<Object>> getExecutionAndReportingReadiness(@PathVariable String companyId) {
+        CompanyExecutionAndReportingReadiness response = companyService.getExecutionAndReportingReadiness(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Execution and reporting readiness details fetched successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/kyc-two/admin/private/level-2/{companyId}/capital-governance-agreement")
+    public ResponseEntity<ApiResponse<Object>> getCapitalGovernanceAgreement(@PathVariable String companyId) {
+        CompanyCapitalGovernanceAgreement response = companyService.getCapitalGovernanceAgreement(companyId);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Capital governance agreement details fetched successfully")
+                .data(response)
+                .build());
+    }
 }

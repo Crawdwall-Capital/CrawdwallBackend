@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 import com.crawdwall_backend_api.company.CompanyKycOneStep;
 import com.crawdwall_backend_api.company.Company;
 import com.crawdwall_backend_api.company.CompanyDeclarationConsent;
+import com.crawdwall_backend_api.company.response.CompanyKycLevel1DetailsResponse;
+import com.crawdwall_backend_api.company.response.CompanyKycLevel1DetailsResponse.CompanyProfileSection;
+import com.crawdwall_backend_api.company.response.CompanyKycLevel1DetailsResponse.ComplianceIdentitySection;
 
 @Service
 @RequiredArgsConstructor
@@ -229,5 +232,79 @@ public class CompanyKycOneService {
     }
 
 
+    // KYC Level 1 - Section 1: Company Profile
+    public CompanyProfileSection getCompanyProfile(String companyId) {
+        Company company = companyService.getCompany(companyId);
+
+        return CompanyProfileSection.builder()
+                .companyName(company.getCompanyName())
+                .companyType(company.getCompanyType())
+                .countryOfRegistration(company.getCompanyAddress() != null ? 
+                    company.getCompanyAddress().country() : null)
+                .dateEstablished(company.getCompanyEstablishedDate())
+                .streetAddress(company.getCompanyAddress() != null ? 
+                    company.getCompanyAddress().streetAddress() : null)
+                .city(company.getCompanyAddress() != null ? 
+                    company.getCompanyAddress().city() : null)
+                .country(company.getCompanyAddress() != null ? 
+                    company.getCompanyAddress().country() : null)
+                .website(company.getCompanyWebsite())
+                .socialMediaLink(company.getCompanySocialMediaUrl())
+                .socialMediaType(company.getCompanySocialMediaType())
+                .companyEmail(company.getCompanyEmail())
+                .phoneNumber(company.getCompanyPhone())
+                .build();
+    }
+
+    // KYC Level 1 - Section 2: Leadership & Ownership
+    public Set<CompanyLeaderShipOwnerShip> getLeadershipOwnership(String companyId) {
+        CompanyKycOne kycOne = companyKycOneRepository.findByCompanyId(companyId);
+        
+        if (kycOne == null) {
+            throw new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_KYC_ONE_NOT_STARTED);
+        }
+
+        return kycOne.getCompanyLeaderShipOwnerShip();
+    }
+
+    // KYC Level 1 - Section 3: Track Record & Credibility
+    public CompanyTrackRecordCredibility getTrackRecord(String companyId) {
+        CompanyKycOne kycOne = companyKycOneRepository.findByCompanyId(companyId);
+        
+        if (kycOne == null) {
+            throw new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_KYC_ONE_NOT_STARTED);
+        }
+
+        return kycOne.getCompanyTrackRecordCredibility();
+    }
+
+    // KYC Level 1 - Section 4: Compliance & Identity (Documents)
+    public ComplianceIdentitySection getComplianceIdentity(String companyId) {
+        CompanyKycOne kycOne = companyKycOneRepository.findByCompanyId(companyId);
+        
+        if (kycOne == null) {
+            throw new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_KYC_ONE_NOT_STARTED);
+        }
+
+        return ComplianceIdentitySection.builder()
+                .taxIdentificationDocument(kycOne.getTaxIdentificationDocument())
+                .certificateOfIncorporation(kycOne.getCertificateOfIncorporation())
+                .proofOfAddressDocument(kycOne.getProofOfAddressDocument())
+                .governmentIdDocument(kycOne.getGovernmentIdDocument())
+                .complianceAndIdentityDocument(kycOne.getComplianceAndIdentityDocument())
+                .build();
+    }
+
+    // KYC Level 1 - Section 5: Declarations & Consent
+    public CompanyDeclarationConsent getDeclarationsConsent(String companyId) {
+        CompanyKycOne kycOne = companyKycOneRepository.findByCompanyId(companyId);
+        
+        if (kycOne == null) {
+            throw new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_KYC_ONE_NOT_STARTED);
+        }
+
+        return kycOne.getCompanyDeclarationConsent();
+    }
 
 }
+
