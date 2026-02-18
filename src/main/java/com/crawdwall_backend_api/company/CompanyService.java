@@ -14,6 +14,9 @@ import com.crawdwall_backend_api.userauthmgt.user.UserType;
 import com.crawdwall_backend_api.company.request.CompanyUpdateRequest;
 import com.crawdwall_backend_api.company.response.CompanyResponse;
 import com.crawdwall_backend_api.company.response.CompanyKyc1ReviewResponse;
+import com.crawdwall_backend_api.company.response.CompanyKycOverviewResponse;
+import com.crawdwall_backend_api.company.response.CompanyKycLevel1DetailsResponse;
+import com.crawdwall_backend_api.company.response.CompanyKycLevel2DetailsResponse;
 import com.crawdwall_backend_api.utils.PaginatedData;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.domain.Page;
@@ -24,6 +27,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.util.StringUtils;
 import com.crawdwall_backend_api.utils.Status;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import org.springframework.data.domain.PageImpl;
@@ -64,6 +68,7 @@ public class CompanyService {
     private final UserService userService;
     private final MongoTemplate mongoTemplate;
     private final JwtService jwtService;
+    private final com.crawdwall_backend_api.company.companyKycOne.CompanyKycOneRepository companyKycOneRepository;
     
     public void createCompany(CompanyCreateRequest request) {
       
@@ -786,5 +791,91 @@ public class CompanyService {
         companyRepository.save(company);
     }
 
-  
+   
+    public CompanyKycOverviewResponse getKycOverview(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+
+        String level1Status = determineKycLevel1Status(company);
+        
+        String level2Status = determineKycLevel2Status(company, level1Status);
+        
+        String userStatus = company.isVerified() ? "VERIFIED" : "UNVERIFIED";
+
+        return CompanyKycOverviewResponse.builder()
+                .companyId(company.getId())
+                .companyName(company.getCompanyName())
+                .userId(company.getUserId())
+                .userStatus(userStatus)
+                .level1Status(level1Status)
+                .level2Status(level2Status)
+                .build();
+    }
+
+    private String determineKycLevel1Status(Company company) {
+        if (company.getCompanyKycOneSteps() == null || company.getCompanyKycOneSteps().isEmpty()) {
+            return "UNVERIFIED";
+        }
+
+        
+        Set<CompanyKycOneStep> steps = company.getCompanyKycOneSteps();
+        boolean hasAllSteps = steps.contains(CompanyKycOneStep.COMPANY_PROFILE_SETUP) &&
+                             steps.contains(CompanyKycOneStep.LEADER_AND_OWNERSHIP) &&
+                             steps.contains(CompanyKycOneStep.TRACK_RECORDS_AND_CREDIBILITY) &&
+                             steps.contains(CompanyKycOneStep.COMPLIANCE_AND_IDENTITY) &&
+                             steps.contains(CompanyKycOneStep.DECLARATION_AND_CONSENT);
+        
+        if (hasAllSteps && steps.contains(CompanyKycOneStep.KYC_COMPLETED)) {
+            return company.isKycCompleted() ? "VERIFIED" : "UNVERIFIED";
+        }
+        
+        return "UNVERIFIED";
+    }
+
+    private String determineKycLevel2Status(Company company, String level1Status) {
+        if (!"VERIFIED".equals(level1Status)) {
+            return "LOCKED";
+        }
+        
+        if (company.getCompanyKycTwoSteps() == null || company.getCompanyKycTwoSteps().isEmpty()) {
+            return "UNVERIFIED";
+        }
+        
+        return company.isKycTwoCompleted() ? "VERIFIED" : "UNVERIFIED";
+    }
+
+    public Set<CompanyBankingAndFinancialAccounts> getBankingAndFinancialAccounts(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+
+        return company.getCompanyBankingAndFinancialAccounts();
+    }
+
+    public Set<CompanyAuthorizedSignatoriesAndControl> getAuthorizedSignatoriesAndControl(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+
+        return company.getCompanyAuthorizedSignatoriesAndControl();
+    }
+
+    public CompanyFinancialIntegrityAndRiskControl getFinancialIntegrityAndRiskControl(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+
+        return company.getCompanyFinancialIntegrityAndRiskControl();
+    }
+
+    public CompanyExecutionAndReportingReadiness getExecutionAndReportingReadiness(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+
+        return company.getCompanyExecutionAndReportingReadiness();
+    }
+
+    public CompanyCapitalGovernanceAgreement getCapitalGovernanceAgreement(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+
+        return company.getCompanyCapitalGovernanceAgreement();
+    }
 }
