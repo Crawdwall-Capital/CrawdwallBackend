@@ -2,7 +2,12 @@ package com.crawdwall_backend_api.company.companyKycOne;
 
 import com.crawdwall_backend_api.company.DocumentEntityValue;
 import com.crawdwall_backend_api.company.companyKycOne.request.*;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +15,7 @@ import com.crawdwall_backend_api.company.CompanyService;
 import com.crawdwall_backend_api.utils.exception.InvalidInputException;
 import com.crawdwall_backend_api.utils.exception.ResourceNotFoundException;
 import com.crawdwall_backend_api.utils.ApiResponseMessages;
+import com.crawdwall_backend_api.utils.PaginatedData;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +25,9 @@ import java.util.stream.Collectors;
 import com.crawdwall_backend_api.company.CompanyKycOneStep;
 import com.crawdwall_backend_api.company.Company;
 import com.crawdwall_backend_api.company.CompanyDeclarationConsent;
+import com.crawdwall_backend_api.company.companyKycOne.response.CompanyKYC1CountResponse;
+import com.crawdwall_backend_api.company.companyKycOne.response.CompanyKyc1Response;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +36,7 @@ public class CompanyKycOneService {
 
     private final CompanyKycOneRepository companyKycOneRepository;
     private final CompanyService companyService;
+    private final MongoTemplate mongoTemplate;
 
 
     
@@ -37,6 +47,7 @@ public class CompanyKycOneService {
         Set<CompanyLeaderShipOwnerShip> companyLeaderShipOwnerShip = buildCompanyLeaderShipOwnerShip(request.getCompanyLeaderShipOwnerShipSetUpRequest());
         companyKycOne.setCompanyLeaderShipOwnerShip(companyLeaderShipOwnerShip);
         companyService.setUpCompanyKycOneStep(company,CompanyKycOneStep.LEADER_AND_OWNERSHIP);
+       companyKycOne.setKycApprovalStage(KycApprovalStage.PENDING);
         companyKycOneRepository.save(companyKycOne);
     }
 
@@ -48,6 +59,7 @@ public class CompanyKycOneService {
         CompanyKycOne companyKycOne = getFreshCompanyKycOne(companyId);
         companyKycOne.setCompanyTrackRecordCredibility(companyTrackRecordCredibility);
         companyService.setUpCompanyKycOneStep(company,CompanyKycOneStep.TRACK_RECORDS_AND_CREDIBILITY);
+        companyKycOne.setKycApprovalStage(KycApprovalStage.PENDING);
         companyKycOneRepository.save(companyKycOne);
     }
 
@@ -60,6 +72,7 @@ public class CompanyKycOneService {
         companyKycOne.setGovernmentIdDocument(buildDocumentEntityValue(request.getGovernmentIdDocumentCreateRequest()));
         companyKycOne.setComplianceAndIdentityDocument(buildDocumentEntityValue(request.getComplianceAndIdentityDocumentCreateRequest()));
         companyService.setUpCompanyKycOneStep(company,CompanyKycOneStep.COMPLIANCE_AND_IDENTITY);
+        companyKycOne.setKycApprovalStage(KycApprovalStage.PENDING);
         companyKycOneRepository.save(companyKycOne);
     }
     public void setUpCompanyDeclarationConsent(String companyId,CompanyDeclarationConsentCreateRequest request) {
@@ -69,7 +82,8 @@ public class CompanyKycOneService {
         CompanyDeclarationConsent companyDeclarationConsent = buildCompanyDeclarationConsent(request);
         companyKycOne.setCompanyDeclarationConsent(companyDeclarationConsent);
         companyService.setUpCompanyKycOneStep(company,CompanyKycOneStep.DECLARATION_AND_CONSENT);
-        companyKycOneRepository.save(companyKycOne);
+        companyKycOne.setKycApprovalStage(KycApprovalStage.PENDING);
+            companyKycOneRepository.save(companyKycOne);
 
     }
     
@@ -90,6 +104,9 @@ public class CompanyKycOneService {
         // will be updating the company status to KYC_COMPLETED
         
     }
+
+
+
 
    
    
@@ -229,5 +246,78 @@ public class CompanyKycOneService {
     }
 
 
+    public CompanyKYC1CountResponse getCompanyKYC1Count() {
+        return CompanyKYC1CountResponse.builder()
+            .totalCount(companyKycOneRepository.count())
+            .pendingCount(companyKycOneRepository.countByKycApprovalStage(KycApprovalStage.PENDING))
+            .approvedCount(companyKycOneRepository.countByKycApprovalStage(KycApprovalStage.APPROVED))
+            .rejectedCount(companyKycOneRepository.countByKycApprovalStage(KycApprovalStage.REJECTED))
+            .inProcessCount(companyKycOneRepository.countByKycApprovalStage(KycApprovalStage.IN_PROCESS))
+            .requestForChangeCount(companyKycOneRepository.countByKycApprovalStage(KycApprovalStage.REQUEST_FOR_CHANGE))
+            .build();
+    }
 
-}
+    public PaginatedData getCompanyKYC1List(int page, int size, String searchParam, KycApprovalStage kycApprovalStage) {
+        Query query = new Query();
+        
+        if (StringUtils.hasText(searchParam)) {
+            query.addCriteria(Criteria.where("companyName").regex(searchParam, "i"));
+        }
+        if (kycApprovalStage != null) {
+            query.addCriteria(Criteria.where("kycApprovalStage").is(kycApprovalStage));
+        }
+        
+        long totalElements = mongoTemplate.count(query, CompanyKycOne.class); 
+        
+        query.with(PageRequest.of(page - 1, size));
+        List<CompanyKycOne> companyKycOnes = mongoTemplate.find(query, CompanyKycOne.class);
+        List<CompanyKyc1Response> companyKyc1Responses = buildCompanyKyc1Response(companyKycOnes);
+        
+        return PaginatedData.builder()
+            .data(companyKyc1Responses)
+            .totalElements(totalElements) 
+            .totalPage((int) Math.ceil((double) totalElements / size))
+            .pageNumber(page)
+            .numberOfElements(companyKyc1Responses.size())
+            .build();
+    }
+    private List<CompanyKyc1Response> buildCompanyKyc1Response(List<CompanyKycOne> companyKycOnes) {
+        return companyKycOnes.stream().map(this::buildCompanyKyc1Response).collect(Collectors.toList());
+    }
+
+
+    private CompanyKyc1Response buildCompanyKyc1Response(CompanyKycOne companyKycOne) {
+        return CompanyKyc1Response.builder()
+            .companyId(companyKycOne.getCompanyId())
+            .companyLeaderShipOwnerShip(companyKycOne.getCompanyLeaderShipOwnerShip())
+            .companyTrackRecordCredibility(companyKycOne.getCompanyTrackRecordCredibility())
+            .taxIdentificationDocument(companyKycOne.getTaxIdentificationDocument())
+            .certificateOfIncorporation(companyKycOne.getCertificateOfIncorporation())
+            .proofOfAddressDocument(companyKycOne.getProofOfAddressDocument())
+            .complianceAndIdentityDocument(companyKycOne.getComplianceAndIdentityDocument())
+            .governmentIdDocument(companyKycOne.getGovernmentIdDocument())
+            .companyDeclarationConsent(companyKycOne.getCompanyDeclarationConsent())
+            .kycComplete(companyKycOne.isKycComplete())
+            .kycApprovalStage(companyKycOne.getKycApprovalStage())
+            .kycCompletedAt(companyKycOne.getKycCompletedAt())
+            .kycStartedAt(companyKycOne.getKycStartedAt())
+            .build();
+    }
+
+
+    public void updateKycApprovalStage(String companyId, KycApprovalStage kycApprovalStage) {
+        Company company = companyService.getCompany(companyId);
+        company.setVerifiedAt(LocalDateTime.now());
+        company.setVerified(true);
+        company.setDocumentVerified(true);
+        company.setDocumentVerifiedAt(LocalDateTime.now());
+       companyService.updateCompany(company);
+        CompanyKycOne companyKycOne = companyKycOneRepository.findByCompanyId(companyId);
+        if(companyKycOne == null) {
+            throw new ResourceNotFoundException(ApiResponseMessages.ERROR_COMPANY_KYC_ONE_NOT_STARTED);
+        }
+        companyKycOne.setKycApprovalStage(kycApprovalStage);
+        companyKycOneRepository.save(companyKycOne);
+    }
+
+}   

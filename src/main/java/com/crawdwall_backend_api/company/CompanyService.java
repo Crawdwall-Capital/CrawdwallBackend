@@ -193,7 +193,7 @@ public class CompanyService {
                 .companyLogo(company.getCompanyLogo())
                 .companyRegistrationNumber(company.getCompanyRegistrationNumber())
                 .companyEstablishedDate(company.getCompanyEstablishedDate())
-                .companyType(company.getCompanyType())
+              
                 .userId(company.getUserId())
                 .companySocialMediaType(company.getCompanySocialMediaType())
                 .companySocialMediaUrl(company.getCompanySocialMediaUrl())
@@ -204,6 +204,9 @@ public class CompanyService {
                 .updatedAt(company.getUpdatedAt())
                 .companyAddress(company.getCompanyAddress())
                 .status(company.getStatus())
+                .countryOfRegistration(company.getCountryOfRegistration())
+                .companyType(company.getCompanyType())
+                .otherInformationForCompanyType(company.getOtherInformationForCompanyType())
                 .build();
     }
 
@@ -338,7 +341,13 @@ public class CompanyService {
     }
 
 
-    public void setUpCompanyProfile(String companyId,CompanyProfileSetUpCreateRequest request) {
+    public CompanyResponse setUpCompanyProfile(String companyId,CompanyProfileSetUpCreateRequest request) {
+       
+       if(request.companyType() == CompanyType.OTHER) {
+        if(request.otherInformationForCompanyType() == null || request.otherInformationForCompanyType().isBlank()) {
+            throw new InvalidInputException(ApiResponseMessages.ERROR_OTHER_VALUE_REQUIRED);
+        }
+       }
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
         company.setCompanyName(request.companyName());
@@ -350,7 +359,10 @@ public class CompanyService {
         company.setCompanySocialMediaUrl(request.companySocialMediaUrl());
         company.setCompanyKycOneSteps(updateCompanyKycOneStep(company,CompanyKycOneStep.COMPANY_PROFILE_SETUP));
         company.setCompanyAddress(request.address());
+        company.setCountryOfRegistration(request.country());
+        company.setOtherInformationForCompanyType(request.otherInformationForCompanyType() != null ? request.otherInformationForCompanyType() : "");
         companyRepository.save(company);
+        return buildCompanyResponse(company);
     }
 
     
@@ -785,6 +797,19 @@ public class CompanyService {
 
         companyRepository.save(company);
     }
+
+    public CompanyResponse getCompanyProfileDetails(String companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new InvalidInputException(ApiResponseMessages.ERROR_COMPANY_NOT_FOUND));
+        return buildCompanyResponse(company);
+    }
+
+
+    public void updateCompany(Company company) {
+        companyRepository.save(company);
+    }
+
+
 
   
 }
