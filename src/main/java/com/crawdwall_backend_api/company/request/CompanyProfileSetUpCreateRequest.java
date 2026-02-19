@@ -14,6 +14,7 @@ public record CompanyProfileSetUpCreateRequest(
 
      String companyName,
     @JsonProperty(required = true)  CompanyType companyType,
+    String otherInformationForCompanyType,
     @JsonProperty(required = true) String country,
      @JsonProperty(required = true)
      @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

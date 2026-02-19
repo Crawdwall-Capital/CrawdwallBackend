@@ -61,4 +61,6 @@ private   CompanyCapitalGovernanceAgreement companyCapitalGovernanceAgreement;
 private   boolean isKycTwoCompleted;
 private   LocalDateTime kycTwoCompletedAt;
 private   LocalDateTime kycTwoStartedAt;
+private   String countryOfRegistration;
+private   String otherInformationForCompanyType;
     }

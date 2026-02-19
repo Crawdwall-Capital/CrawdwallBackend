@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-
-
 import com.crawdwall_backend_api.utils.ApiResponse;
 import com.crawdwall_backend_api.company.request.CompanyCreateRequest;
 import com.crawdwall_backend_api.company.request.CompanyUpdateRequest;
@@ -22,8 +20,6 @@ import com.crawdwall_backend_api.userauthmgt.user.response.UserVerifyOtpRequest;
 import com.crawdwall_backend_api.userauthmgt.user.request.UserResetPasswordRequest;
 import com.crawdwall_backend_api.userauthmgt.userotp.UserOtpType;
 import com.crawdwall_backend_api.company.request.CompanyProfileSetUpCreateRequest;
-import com.crawdwall_backend_api.company.companyKycOne.request.DocumentEntityValueCreateRequestSetUp;
-import com.crawdwall_backend_api.company.companyKycOne.request.CompanyDeclarationConsentCreateRequest;
 import com.crawdwall_backend_api.company.response.CompanyAuthResponse;
 import com.crawdwall_backend_api.userauthmgt.user.request.UserAuthRequest;
 import com.crawdwall_backend_api.company.request.CompanyBankingAndFinancialAccountsRequest;
@@ -247,4 +243,5 @@ public class CompanyController {
                 .build());
     }
 
+   
 }

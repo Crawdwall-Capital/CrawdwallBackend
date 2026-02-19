@@ -40,5 +40,6 @@ public class CompanyResponse {
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     Status status;
-    
+    String countryOfRegistration;
+    String otherInformationForCompanyType;
 }

@@ -34,6 +34,7 @@ public class DefaultRouteValidator {
     );
 
     public static final List<Pattern> ADMIN_ENDPOINTS = List.of(
+            Pattern.compile("/api/v1/company/private.*"),
             Pattern.compile("/api/v1/admin/private.*"),
             Pattern.compile("/api/v1/blog/admin/private.*"),
             Pattern.compile("/api/v1/role/admin/private.*"),
@@ -44,10 +45,12 @@ public class DefaultRouteValidator {
             Pattern.compile("/api/v1/therapist/admin/private.*"),
             Pattern.compile("/api/v1/company/kyc-one/admin/private.*"),
             Pattern.compile("/api/v1/company/kyc-one/private.*"),
+            Pattern.compile("/api/v1/company/kyc-one/admin/private.*"),
             Pattern.compile("/api/v1/company/kyc-two/admin/private.*")
         );
 
         public static final List<Pattern> SUPER_ADMIN_ENDPOINTS = List.of(
+            Pattern.compile("/api/v1/company/private.*"),
             Pattern.compile("/api/v1/admin/private.*"),
             Pattern.compile("/api/v1/admin/super-admin/private.*"),
             Pattern.compile("/api/v1/blog/admin/private.*"),
@@ -56,7 +59,8 @@ public class DefaultRouteValidator {
             Pattern.compile("/api/v1/newsletter-emails/admin/private.*"),
             Pattern.compile("/api/v1/app-user/admin/private.*"),
             Pattern.compile("/api/v1/therapist/admin/private.*"),
-            Pattern.compile("/api/v1/users/admin/private.*")
+            Pattern.compile("/api/v1/users/admin/private.*"),
+            Pattern.compile("/api/v1/company/kyc-one/admin/private.*")
     );
 
     // Check if endpoint requires admin role
